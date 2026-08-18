@@ -1,0 +1,264 @@
+% Compilar con:  latexmk -xelatex 01-plan-maestro.tex
+% (o: xelatex 01-plan-maestro.tex  ejecutado dos veces para el índice)
+\documentclass[11pt,a4paper]{article}
+
+\usepackage{fontspec}
+\usepackage[spanish,es-noshorthands]{babel}
+\usepackage{geometry}
+\geometry{margin=2.4cm}
+\usepackage{xcolor}
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{fancyhdr}
+\usepackage[most]{tcolorbox}
+\usepackage{newunicodechar}
+\usepackage{hyperref}
+
+% --- Símbolos Unicode presentes en el texto -> modo matemático / macros ---
+\newunicodechar{→}{\ensuremath{\rightarrow}}
+\newunicodechar{≤}{\ensuremath{\leq}}
+\newunicodechar{≥}{\ensuremath{\geq}}
+\newunicodechar{×}{\ensuremath{\times}}
+\newunicodechar{≈}{\ensuremath{\approx}}
+\newunicodechar{·}{\textperiodcentered}
+\newunicodechar{†}{\textsuperscript{\dag}}
+
+% --- Colores y estilo ---
+\definecolor{accent}{HTML}{0F6E8C}
+\definecolor{accentdark}{HTML}{0A4B60}
+\definecolor{soft}{HTML}{F2F6F8}
+
+\titleformat{\section}{\Large\bfseries\color{accentdark}}{\thesection}{0.6em}{}
+\titleformat{\subsection}{\large\bfseries\color{accent}}{\thesubsection}{0.6em}{}
+\titlespacing*{\section}{0pt}{1.4em}{0.5em}
+
+\setlist[itemize]{leftmargin=1.3em,itemsep=2pt,topsep=3pt}
+\setlist[enumerate]{leftmargin=1.6em,itemsep=2pt,topsep=3pt}
+
+\renewcommand{\arraystretch}{1.25}
+\setlength{\emergencystretch}{3em}
+\setlength{\tabcolsep}{5pt}
+
+\hypersetup{
+  colorlinks=true, linkcolor=accent, urlcolor=accent, citecolor=accent,
+  pdftitle={Plan Maestro — Digi Starlink-Primary Resilient Gateway Fleet},
+  pdfauthor={Capstone de internship · Digi International}
+}
+
+% Cajas
+\newtcolorbox{nota}{colback=soft,colframe=accent!35,boxrule=0.5pt,arc=2pt,
+  left=8pt,right=8pt,top=5pt,bottom=5pt}
+\newtcolorbox{clave}{colback=accent!6,colframe=accent,boxrule=1pt,arc=2pt,
+  left=10pt,right=10pt,top=7pt,bottom=7pt}
+
+% Encabezado / pie
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\color{accentdark}Plan Maestro}
+\fancyhead[R]{\small\color{accentdark}Starlink-Primary Gateway Lab}
+\fancyfoot[C]{\small\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0pt}
+
+% Encabezado de celda de tabla
+\newcommand{\hcell}[1]{\textbf{#1}}
+
+\begin{document}
+
+\begin{center}
+  {\Huge\bfseries\color{accentdark} Plan Maestro}\\[6pt]
+  {\large Digi Starlink-Primary Resilient Gateway Fleet}\\[2pt]
+  {\normalsize Reference Lab + Embedded Site Sensor}\\[10pt]
+  {\small Capstone de internship · Digi International \quad|\quad Julio 2026}
+\end{center}
+
+\vspace{4pt}
+\begin{nota}
+\small
+\textbf{Proyecto:} Digi Starlink-Primary Resilient Gateway Fleet — Reference Lab + Embedded Site Sensor.\\
+\textbf{Contexto:} capstone de internship en Digi International.\\
+\textbf{Duración objetivo:} sprint de 2 semanas (ampliable, camino de expansión definido).\\
+\textbf{Documento:} plan combinado a partir de \texttt{plan1} (los 4 proyectos) y \texttt{plan2} (el laboratorio de referencia de 3 sitios).
+\end{nota}
+
+\begin{nota}
+\small
+Este es un documento de planificación. No contiene scripts ni configuraciones listas para ejecutar. Los nombres de rutas, campos CLI/API, SKUs y comandos se incluyen porque forman parte de la prueba técnica que se solicita demostrar.
+\end{nota}
+
+\vspace{2pt}
+{\small\tableofcontents}
+\vspace{6pt}
+
+% =====================================================================
+\section{Decisión ejecutiva (una frase)}
+
+\begin{clave}
+\textbf{Construyo un laboratorio de referencia repetible donde routers industriales Digi IX40-05 entregan servicios dual-stack y rutas BGP sobre un underlay Starlink-primary}, con \textbf{5G in-band} como respaldo, \textbf{gestión central como código por Digi Remote Manager}, telemetría física XBee, un \textbf{sensor de sitio embebido en ConnectCore MP255 con Yocto, gestionado por el mismo Remote Manager}, y una comparación cuantitativa entre failover nativo (SureLink) y WAN Bonding — todo verificado con inyección de fallos medida. El plano \textbf{out-of-band Opengear/Lighthouse} se integra como fase 2 cuando llegue el hardware.
+\end{clave}
+
+Esta formulación satisface dos audiencias a la vez:
+
+\begin{itemize}
+  \item \textbf{Digi (el manager):} un activo de interoperabilidad y enablement vendible — arquitectura de referencia ``Starlink primary + Digi 5G + Opengear OOB'' reutilizable por preventa, soporte y documentación, con hallazgos concretos para PM.
+  \item \textbf{Starlink (tu carrera):} evidencia técnica de BGP/IPv6, separación underlay/overlay, convergencia medida, operación de flotas a escala, OOB independiente y software Linux embebido de calidad — exactamente los dos perfiles que Starlink contrata en tierra (Reliability/Ground Network Specialist \emph{y} Software Engineer, Ground Stations).
+\end{itemize}
+
+El laboratorio \textbf{no} emula la red propietaria de Starlink ni afirma acceso a sus protocolos internos. Simula patrones de una flota de gateways y \textbf{mide} su comportamiento sobre un servicio Starlink comercial.
+
+% =====================================================================
+\section{De dónde viene esto: fusión de plan1 y plan2}
+
+\begin{center}
+\small
+\begin{tabularx}{\textwidth}{@{}p{1.7cm} X X@{}}
+\toprule
+\hcell{Fuente} & \hcell{Qué aportaba} & \hcell{Qué tomo} \\
+\midrule
+\texttt{plan1} & 4 proyectos independientes: O1 (gateway autónomo con auto-remediación + SIEM), O2 (fleet provisioning por API), D1 (edge resiliente Starlink-WAN como IaC), D2 (sensor embebido ConnectCore/Yocto). & La \textbf{historia de carrera Starlink}, el \textbf{lazo cerrado detección→remediación→verificación} (de O1, como stretch), la \textbf{automatización de flota} (de O2, como mecanismo de clonado) y, sobre todo, el \textbf{track embebido D2 elevado a entregable central}. \\
+\addlinespace
+\texttt{plan2} & Un único laboratorio de referencia de 3 sitios, muy maduro: selección de producto justificada, contratos de API DRM/Lighthouse verificados, config real de DAL OS, registro de incertidumbres G1–G12, matriz de fallos, criterios de aceptación, BOM con SKUs y plan de 10 semanas. & La \textbf{arquitectura completa}, el \textbf{rigor de verificación}, la \textbf{BOM}, la \textbf{matriz de fallos} y los \textbf{criterios de aceptación}. Es el esqueleto del plan. \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+\noindent\textbf{Reconciliación:} plan2 es el cuerpo; plan1 aporta el músculo embebido (D2 → central), la automatización de flota (O2 → mecanismo de clonado) y el lazo de auto-remediación (O1 → stretch). El resultado es \textbf{un solo laboratorio con dos narrativas que se refuerzan}: resiliencia de red medida + edge embebido de calidad de software, ambos bajo el mismo plano de gestión (Digi Remote Manager).
+
+% =====================================================================
+\section{Objetivos}
+
+\subsection{Para Digi (audiencia principal)}
+Producir una arquitectura de referencia repetible para clientes que usan Starlink como WAN primaria con Digi 5G, SureLink, DRM, Containers, WAN Bonding y Opengear OOB; generar datos de interoperabilidad y hallazgos documentales (G1–G12) útiles para ingeniería, preventa, soporte y enablement; y demostrar \textbf{uso significativo, no decorativo}, de IX40, DRM, Containers, XBee Hive, ConnectCore/Yocto, WAN Bonding y (fase 2) Opengear/Lighthouse.
+
+\subsection{Para Starlink (mapeo de perfiles)}
+\begin{center}
+\small
+\begin{tabularx}{\textwidth}{@{}p{4.3cm} X@{}}
+\toprule
+\hcell{Perfil Starlink} & \hcell{Qué del lab lo evidencia} \\
+\midrule
+Ground Network Specialist / Reliability Engineer & Diagnóstico y reparación de hardware de tierra, convergencia de failover medida, OOB independiente, telemetría operacional. \\
+\addlinespace
+Software Engineer, Ground Stations & Imagen Linux custom con \textbf{Yocto} sobre \textbf{ARM} (ConnectCore MP255), secure boot, sistema tolerante a fallos con mantenimiento mínimo, envío resiliente y OTA. \\
+\addlinespace
+SecOps / seguridad de infraestructura distribuida & Acceso privilegiado auditado, segmentación management/servicio/OOB, detección en sitios desatendidos, respuesta cuando el enlace principal cae. \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+% =====================================================================
+\section{Alcance: modelo de anillos concéntricos}
+
+plan2 es de 10 semanas con campañas de 30 repeticiones. \textbf{Eso no cabe entero en 2 semanas}, y fingir que sí reprobaría la exigencia de ``verificar los pasos''. El alcance se organiza en tres anillos; el sprint compromete el Anillo 0 y deja los anillos 1 y 2 como expansión mapeada.
+
+\subsection*{Anillo 0 — Sprint de 2 semanas (el compromiso del capstone)}
+Entregables \textbf{garantizados} al final de la semana 2:
+\begin{itemize}
+  \item \textbf{1 sitio Digi completo end-to-end:} IX40-05 + Starlink Performance Kit (WAN primaria) + 5G IX40 (WAN backup) + \texttt{SFP/ETH5} a fabric de servicio + overlay IKEv2/IPsec + \textbf{eBGP} al core AS65000 con \textbf{IPv4 e IPv6} y filtros + \textbf{SureLink} multicapa afinado + failover \textbf{medido}.
+  \item \textbf{DRM-as-code:} enrolamiento por API, golden config (Configuration Manager), settings por sitio, scan/compliance, alarmas y \textbf{Push Monitor → SIEM}.
+  \item \textbf{Track embebido a estado funcional:} imagen \textbf{DEY (Yocto)} que arranca en ConnectCore MP255, \textbf{receta propia} con el \textbf{agente} que recolecta y envía al SIEM con \textbf{buffer offline + reenvío}. \emph{(Secure boot y OTA quedan explícitamente para fase posterior — ver Anillo 2.)}
+  \item \textbf{Telemetría física:} un sensor \textbf{XBee Zigbee} vía \textbf{XBee Hive} → DataPoints DRM; \textbf{Digi Container} ligero de métricas en el IX40 con límites de recursos.
+  \item \textbf{Automatización de clonado:} plantillas DRM + Ansible que levantan un sitio nuevo con un comando (\texttt{make deploy}), idempotente.
+  \item \textbf{WAN Bonding A/B:} Tier 3 en ese sitio; comparación native vs bonding con el \textbf{mismo} impairment trace.
+  \item \textbf{Campaña de pruebas representativa:} ≈10 repeticiones en los fallos principales (desconexión Starlink, blackhole aguas arriba, DNS-only), con p50/p95 y trazas correlacionadas.
+  \item \textbf{Demo grabada} de 12 min + versión de 90 s, one-pager ejecutivo y README sanitizado.
+\end{itemize}
+
+\subsection*{Anillo 1 — Si el hardware llega a tiempo (dentro del sprint o inicio de fase 2)}
+\begin{itemize}
+  \item \textbf{Sitios 2 y 3 físicos}, levantados por la automatización ya probada (aquí ``3 sitios'' se vuelve real: sitio 2 y 3 son \texttt{make deploy}, no reconstrucción manual).
+  \item \textbf{Opengear OOB/Lighthouse} integrado: OM1304 por LSP en Lighthouse Enhance, consola serial del IX40 en modo Login, RBAC, failover OOB. \textbf{Este es el motivo del enfoque ``Digi primero, Opengear fase 2'':} el retraso de Opengear no bloquea nada del camino crítico.
+\end{itemize}
+
+\subsection*{Anillo 2 — Programa completo (fase 2, mapea a las semanas 3–10 de plan2)}
+\begin{itemize}
+  \item \textbf{Rotación de perfiles A/B/C} entre 3 unidades (elimina sesgo de una unidad/terminal/celda).
+  \item \textbf{Campaña de 30 repeticiones} por fallo con p50/p95/p99 y publicación de datos brutos.
+  \item \textbf{OTA completo} del agente embebido (\texttt{.swu} vía ConnectCore Cloud Services / firmware repo de DRM).
+  \item \textbf{TrustFence secure boot} en el ConnectCore (firma de U-Boot/kernel, \texttt{SRK\_efuses.bin}, \texttt{trustfence close} irreversible, cifrado de rootfs). Se saca del sprint por ser irreversible y de tiempo impredecible.
+  \item \textbf{Carril OEM} con ConnectCore MP255 como controlador simulado (TSN/NPU).
+  \item \textbf{Matriz de interoperabilidad completa} por firmware, carrier, IPv4/IPv6, MTU y hardware Starlink.
+  \item \textbf{Lazo de auto-remediación} (de plan1 O1): remediación decidida por árbol según tipo de fallo, verificada, con rollback.
+  \item Cierre de \textbf{G1, G2, G11} (dependientes de Opengear) y backlog de hallazgos para PM.
+\end{itemize}
+
+\begin{nota}
+\small La demo del final del sprint muestra 1 sitio físico funcionando + la automatización que pararía la flota. Si el hardware de sitios 2-3 llegó, se muestran físicos.
+\end{nota}
+
+% =====================================================================
+\section{Qué NO es (límites y honestidad)}
+\begin{itemize}
+  \item No es una réplica de la red de Starlink ni una afirmación de eBGP de cliente con Starlink. BGP corre \textbf{dentro del overlay} del laboratorio; Starlink es el \textbf{underlay IP} (ver G5).
+  \item No es un plan que garantice completar las 10 semanas de plan2 en 2. El sprint entrega un \textbf{subconjunto coherente y demoable}, no la campaña estadística completa.
+  \item No inventa contratos de API ni comandos: donde la documentación pública no confirma algo, se marca en el registro G1–G12 y \textbf{se valida contra el tenant/firmware real antes de depender de ello}.
+  \item No comparte energía ni carrier entre el plano in-band y el OOB; si lo hiciera, el supuesto de independencia sería falso.
+\end{itemize}
+
+% =====================================================================
+\section{Componentes clave y por qué ganan (resumen)}
+
+\begin{sloppypar}
+El detalle de selección, alternativas y tradeoffs está en \texttt{02-requisitos.md} y \texttt{03-arquitectura.md}. Resumen:
+\end{sloppypar}
+
+\begin{center}
+\small
+\begin{tabularx}{\textwidth}{@{}p{2.15cm} p{3.35cm} X@{}}
+\toprule
+\hcell{Rol} & \hcell{Selección} & \hcell{Por qué gana en una línea} \\
+\midrule
+Edge router & \textbf{IX40-05} & Único ajuste actual con 5G industrial + BGP/IPv6 + dos SFP 1\,Gb/s + serial/E-S + edge compute + SureLink + DRM + Containers + Bonding. \\
+WAN primaria & \textbf{Starlink Performance Kit (Gen 3)} & Orientación comercial fija, fuente AC/DC avanzada, vida de diseño para despliegues exigentes. \\
+WAN backup & \textbf{5G del IX40} & Segundo underlay independiente con SIM/APN propio. \\
+Gestión Digi & \textbf{DRM Premier} & Configuration Manager, API, alerts, monitors, data streams, Containers y VAS en el mismo plano — y también el OTA del ConnectCore vía CCCS. \\
+Telemetría RF/edge & \textbf{XBee Hive} \texttt{XH-24P-TW1-101} + XBee 3 Zigbee & ConnectCore + XBee + LTE/Wi-Fi/Ethernet + edge + DRM sin diseñar carrier board. \\
+Sensor embebido (central) & \textbf{ConnectCore MP255} \texttt{CC-WMP255-KIT} & Carril de software embebido moderno: Yocto/DEY, TrustFence, TSN/NPU, OTA por CCCS. \\
+Resiliencia de datos & \textbf{Failover nativo + experimento WAN Bonding} & Compara dos mecanismos distintos con el mismo hardware y los mismos fallos. \\
+OOB (fase 2) & \textbf{OM1304-4E-C-LSP} (provisional, ver G1) & Consola + 5G independiente + switch de gestión + SFP + LSP compacto; fallback \texttt{CM8004-C-LSP}. \\
+Gestión OOB (fase 2) & \textbf{Lighthouse Enhance} & Fabric, routed IP, observabilidad y automatización de flota, no solo portal de consolas. \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+% =====================================================================
+\section{Mapa de documentos del paquete}
+
+\begin{center}
+\footnotesize
+\begin{tabularx}{\textwidth}{@{}c p{5.9cm} X@{}}
+\toprule
+\hcell{\#} & \hcell{Documento} & \hcell{Para qué} \\
+\midrule
+00 & \texttt{00-README.md} & Índice y resumen ejecutivo de una página. \\
+01 & \emph{este documento} & El plan combinado, objetivos y alcance. \\
+02 & \texttt{02-requisitos.md} & Todo lo que necesito pedir/autorizar: BOM, licencias, SIMs, planes, infra, cuentas. \\
+03 & \texttt{03-arquitectura.md} & Cómo queda: topología, cableado, direccionamiento, diagramas. \\
+04 & \texttt{04-pasos-montaje.md} & Cómo montarlo: runbook día a día del sprint + fase 2. \\
+05 & \texttt{05-embebido-connectcore.md} & El track embebido central en detalle (Yocto, agente, secure boot, OTA). \\
+06 & \texttt{06-pruebas-y-demo.md} & Matriz de fallos, criterios de aceptación, guion de demo, artefactos. \\
+07 & \texttt{07-riesgos-y-verificaciones.md} & Registro G1–G12, riesgos, honestidad de la compresión, gates. \\
+08 & \texttt{08-executive-pitch-EN.md} & Pitch de una página al manager (en inglés). \\
+\bottomrule
+\end{tabularx}
+\end{center}
+
+% =====================================================================
+\section{Criterios de éxito del sprint (nivel plan)}
+
+El sprint es un éxito si, al final de la semana 2:
+\begin{enumerate}
+  \item Un sitio Digi completo entrega servicio dual-stack con \textbf{failover Starlink→5G medido} (objetivo de trabajo p95 ≤ 30 s tras afinar SureLink; si no se logra, se publica la medición y la causa).
+  \item El \textbf{collector AS65000} recibe exactamente los prefijos IPv4/IPv6 esperados, cero route leaks.
+  \item La \textbf{imagen embebida (Yocto/DEY) arranca en el MP255}, el agente envía al SIEM y \textbf{no pierde datos} ante un corte de red (buffer + replay). \emph{(Secure boot: fase posterior.)}
+  \item Un \textbf{segundo despliegue} (sitio 2 físico o simulado) se levanta con la automatización, idempotente.
+  \item La comparación \textbf{native vs WAN Bonding} existe con el mismo impairment trace.
+  \item Hay una \textbf{demo grabada} correlacionable con IDs de fallo y un one-pager para el manager.
+\end{enumerate}
+
+Los criterios técnicos detallados (p50/p95/p99, 30 reps, etc.) del programa completo están en \texttt{06-pruebas-y-demo.md} §Criterios de aceptación.
+
+\end{document}

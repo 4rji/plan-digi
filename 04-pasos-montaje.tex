@@ -1,0 +1,533 @@
+% Compilar con:  latexmk -xelatex 04-pasos-montaje.tex
+\documentclass[11pt,a4paper]{article}
+
+\usepackage{fontspec}
+\usepackage[spanish,es-noshorthands]{babel}
+\usepackage{geometry}
+\geometry{margin=2.4cm}
+\usepackage{xcolor}
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{fancyhdr}
+\usepackage[most]{tcolorbox}
+\usepackage{newunicodechar}
+\usepackage{hyperref}
+
+\setmonofont{DejaVu Sans Mono}[Scale=0.82]
+
+% --- Símbolos Unicode ---
+\newunicodechar{→}{\ensuremath{\rightarrow}}
+\newunicodechar{←}{\ensuremath{\leftarrow}}
+\newunicodechar{↔}{\ensuremath{\leftrightarrow}}
+\newunicodechar{≤}{\ensuremath{\leq}}
+\newunicodechar{≥}{\ensuremath{\geq}}
+\newunicodechar{×}{\ensuremath{\times}}
+\newunicodechar{≈}{\ensuremath{\approx}}
+\newunicodechar{·}{\textperiodcentered}
+\newunicodechar{†}{\textsuperscript{\dag}}
+
+% --- Colores y estilo ---
+\definecolor{accent}{HTML}{0F6E8C}
+\definecolor{accentdark}{HTML}{0A4B60}
+\definecolor{soft}{HTML}{F2F6F8}
+\definecolor{warn}{HTML}{7A3B00}
+\definecolor{warnbg}{HTML}{FFF8F0}
+
+\titleformat{\section}{\Large\bfseries\color{accentdark}}{\thesection}{0.6em}{}
+\titleformat{\subsection}{\large\bfseries\color{accent}}{\thesubsection}{0.6em}{}
+\titleformat{\subsubsection}{\normalsize\bfseries\color{accent}}{\thesubsubsection}{0.5em}{}
+\titlespacing*{\section}{0pt}{1.6em}{0.5em}
+\titlespacing*{\subsection}{0pt}{1.2em}{0.4em}
+\titlespacing*{\subsubsection}{0pt}{0.9em}{0.3em}
+
+\setlist[itemize]{leftmargin=1.3em,itemsep=2pt,topsep=3pt}
+\setlist[enumerate]{leftmargin=1.6em,itemsep=2pt,topsep=3pt}
+
+\renewcommand{\arraystretch}{1.25}
+\setlength{\emergencystretch}{3em}
+\setlength{\tabcolsep}{5pt}
+
+\hypersetup{
+  colorlinks=true, linkcolor=accent, urlcolor=accent, citecolor=accent,
+  pdftitle={04 · Pasos de montaje — Runbook del sprint},
+  pdfauthor={Capstone de internship · Digi International}
+}
+
+% Cajas
+\newtcolorbox{nota}{colback=soft,colframe=accent!35,boxrule=0.5pt,arc=2pt,
+  left=8pt,right=8pt,top=5pt,bottom=5pt}
+\newtcolorbox{clave}{colback=accent!6,colframe=accent,boxrule=1pt,arc=2pt,
+  left=10pt,right=10pt,top=7pt,bottom=7pt}
+\newtcolorbox{aviso}{colback=warnbg,colframe=warn!60,boxrule=0.8pt,arc=2pt,
+  left=8pt,right=8pt,top=5pt,bottom=5pt}
+
+% Caja de día (título inline)
+\newtcolorbox{diabox}[1]{
+  colback=accent!5, colframe=accentdark, boxrule=0.8pt, arc=3pt,
+  left=8pt,right=8pt,top=6pt,bottom=6pt,
+  title={\bfseries\color{white}#1},
+  attach boxed title to top left={yshift=-2mm,xshift=4mm},
+  boxed title style={colback=accentdark,arc=2pt,boxrule=0pt}
+}
+
+% Encabezado / pie
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\color{accentdark}04 · Runbook del sprint}
+\fancyhead[R]{\small\color{accentdark}Starlink-Primary Gateway Lab}
+\fancyfoot[C]{\small\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0pt}
+
+\newcommand{\file}[1]{\texttt{#1}}
+\newcommand{\gate}[1]{\textbf{G#1}}
+\newcommand{\done}{\textbf{Done:}}
+\newcommand{\embebido}{\textit{Track embebido (paralelo):}}
+\newcommand{\stretchgoal}[1]{\textit{Stretch: #1}}
+
+% ─────────────────────────────────────────────────────────────────
+\begin{document}
+
+\begin{center}
+  {\Huge\bfseries\color{accentdark} Pasos de montaje}\\[6pt]
+  {\large Runbook del sprint — 10 días hábiles}\\[2pt]
+  {\normalsize Digi Starlink-Primary Resilient Gateway Fleet}\\[10pt]
+  {\small Capstone de internship · Digi International \quad|\quad Julio 2026}
+\end{center}
+
+\vspace{4pt}
+\begin{nota}
+\small
+Runbook \textbf{día a día} del sprint de 2 semanas (Anillo 0), con el enfoque
+\textbf{Digi primero}. El track embebido corre \textbf{en paralelo} desde el Día 1 porque
+los builds de Yocto son lentos y no deben bloquear el resto. Al final está la fase 2
+(Opengear + expansión).
+
+\medskip
+Cada día declara: \textbf{objetivo}, \textbf{pasos}, \textbf{verificación (done)} y
+\textbf{track embebido en paralelo}. Nada se marca ``done'' sin la verificación observada.
+No se adivinan contratos de API: donde aparezca un gate G*, se cierra antes de depender de él
+(ver \file{07-riesgos-y-verificaciones.md}).
+
+\medskip
+\textbf{Ritmo:} 10 días hábiles. Cada día trae un \textit{stretch} opcional.
+Si el hardware de sitios 2-3 u Opengear llega durante el sprint, se salta a la sección de
+fase 2 sin reordenar lo demás.
+\end{nota}
+
+\vspace{2pt}
+{\small\tableofcontents}
+\vspace{6pt}
+
+% ─────────────────────────────────────────────────────────────────
+\section{Día 0 — Charter y gates (antes de tocar hardware)}
+
+\textbf{Objetivo:} dejar el proyecto listo para comprar/montar sin sorpresas.
+
+\begin{enumerate}
+  \item Aprobar objetivos, límites de divulgación y reglas de publicación con el manager
+        (ver \file{08-executive-pitch-EN.md}).
+  \item Congelar \textbf{firmware} de IX40, Hive y MP255 → matriz de versiones.
+  \item \textbf{License audit (\gate{8}):} confirmar en el tenant DRM Premier + Containers +
+        Push Monitor + CCCS/firmware repo.
+  \item Cotizar/pedir hardware Digi del sprint y \textbf{autorizar en paralelo} sitios 2-3 y
+        Opengear (fase 2).
+  \item Contratar 1 plan Starlink Priority y 1 SIM 5G Carrier A; validar cobertura de banco
+        (\gate{10}).
+  \item Cerrar o poner en curso \gate{3} (body de \file{scan\_now}), \gate{4} (nombre del campo
+        ASN remoto), \gate{9} (plan/HW Starlink), \gate{12} (\file{type}/\file{vendor\_id} del
+        IX40). Los gates de Opengear (\gate{1}/\gate{2}/\gate{11}) van en paralelo, no bloquean.
+\end{enumerate}
+
+\begin{clave}
+\small
+\done{} matriz de versiones congelada; SKUs y licencias cotizables/reconciliados; plan Starlink
+y SIM contratados; host de build DEY provisionado.
+\end{clave}
+
+% ─────────────────────────────────────────────────────────────────
+\section{Semana 1 — Fundamentos Digi + arranque embebido}
+
+% ───────────
+\subsection{Día 1 — Sitio A físico + Starlink online + arranque del build Yocto}
+
+\textbf{Objetivo:} conectividad básica del sitio y el primer \file{bitbake} corriendo.
+
+\textbf{Pasos (in-band):}
+\begin{enumerate}
+  \item Rack del Sitio A, energía en PDU/UPS primaria, etiquetado.
+  \item Starlink Performance Kit → IX40 \file{WAN/ETH1} (cobre). Dejar \file{SFP/ETH1} vacío.
+  \item IX40 arranca; acceso local por HTTPS/SSH (no exponer a Internet).
+  \item Registrar el underlay Starlink observado (\textbf{\gate{9}}): CGNAT
+        \file{100.64.0.0/10} vs IPv4 pública, IPv6 \file{/64} SLAAC y \file{/56} DHCPv6-PD,
+        MTU, latencia/jitter base.
+\end{enumerate}
+
+\begin{clave}
+\small
+\done{} el IX40 alcanza Internet por Starlink (IPv4 y, si se entrega, IPv6);
+ficha del underlay registrada.
+\end{clave}
+
+\textbf{\embebido}
+\begin{itemize}
+  \item Provisionar host de build; instalar dependencias de \textbf{Digi Embedded Yocto (DEY 4.0)}.
+  \item \file{repo}/\file{git clone} de las capas \file{meta-digi}; \file{mkproject.sh}
+        para plataforma \textbf{\file{ccmp25}} (ConnectCore MP255).
+  \item Lanzar el \textbf{primer} \file{bitbake <dey-image-*>} (tarda \textbf{horas};
+        dejar corriendo toda la noche).
+\end{itemize}
+
+% ───────────
+\subsection{Día 2 — 5G como segundo underlay + primer boot embebido}
+
+\textbf{Objetivo:} WAN de respaldo lista y la imagen custom arrancando en el MP255.
+
+\textbf{Pasos (in-band):}
+\begin{enumerate}
+  \item Configurar el módem 5G del IX40 con SIM/APN de Carrier A → segundo underlay in-band.
+  \item Métricas WAN: \file{ETH1} métrica IPv4 = 1 (Starlink, prioritaria), \file{Modem} = 3.
+  \item SureLink \textbf{básico} en ambas interfaces (sin afinar todavía).
+  \item Registrar IPv4/IPv6/MTU/NAT del 5G (\textbf{\gate{10}}).
+\end{enumerate}
+
+\begin{clave}
+\small
+\done{} al desconectar Starlink a mano, el tráfico sale por 5G (verificación gruesa,
+sin medir aún).
+\end{clave}
+
+\textbf{\embebido}
+\begin{itemize}
+  \item Flashear la imagen del Día 1 en el MP255; \textbf{primer boot}.
+  \item Validar arranque, consola, red del SOM. Guardar la imagen base reproducible.
+\end{itemize}
+
+% ───────────
+\subsection{Día 3 — Fibra de servicio + overlay + eBGP}
+
+\textbf{Objetivo:} el sitio anuncia su red por BGP sobre el overlay al core.
+
+\textbf{Pasos (in-band):}
+\begin{enumerate}
+  \item Poblar \file{SFP/ETH5} con la óptica \textbf{1\,Gb/s validada (\gate{6})} →
+        fabric/carga de servicio. \textbf{Nunca SFP+.}
+  \item Definir la red de servicio del sitio: IPv4 RFC1918 \file{/24} + IPv6 documentación
+        \file{/64} (\file{2001:db8::/32}).
+  \item Levantar el \textbf{overlay IKEv2/IPsec route-based con NAT-T} hacia el endpoint
+        central público (NAT-T obligatorio por CGNAT).
+  \item Configurar \textbf{eBGP} sitio (AS65001) ↔ core (AS65000) bajo
+        \file{network route service bgp}. Capturar el nombre real del campo de \textbf{ASN remoto}
+        del vecino inspeccionando el esquema DAL (\file{?} en
+        \file{network route service bgp neighbour} o la API local
+        \file{https://\{ix40\}/cgi-bin/config.cgi}) — \textbf{\gate{4}}, no adivinar.
+  \item Aplicar políticas: prefix-lists in/out, max-prefix, prohibir anunciar default.
+\end{enumerate}
+
+\begin{clave}
+\small
+\done{} el collector AS65000 recibe \textbf{exactamente} los prefijos IPv4/IPv6 esperados del
+sitio; los filtros negativos pasan (no se filtra lo prohibido); MTU documentada;
+cero route leaks.
+\end{clave}
+
+\textbf{\embebido}
+\begin{itemize}
+  \item Crear la \textbf{receta custom} en una capa propia (\file{meta-<lab>}) que empaquete el
+        \textbf{agente} (Python) en la imagen.
+  \item Rebuild incremental (mucho más rápido que el primero).
+\end{itemize}
+
+% ───────────
+\subsection{Día 4 — DRM-as-code + alarmas + Push Monitor → SIEM}
+
+\textbf{Objetivo:} el sitio se gestiona como código y emite eventos al SIEM.
+
+\textbf{Pasos:}
+\begin{enumerate}
+  \item \textbf{Enrolar} el IX40 por API:
+        \file{POST /ws/v1/devices/inventory?bundle\_device=true} con \file{id} +
+        \file{install\_code} (de la etiqueta, nunca en el repo).
+  \item Importar la config del IX40 de referencia, leer el árbol real y crear la
+        \textbf{golden config} con Configuration Manager:
+        \file{POST /ws/v1/configs/inventory}
+        (campos \file{name}, \file{groups}, \file{type}, \file{vendor\_id}, \file{enabled},
+        \file{alert}, \file{remediate}, \file{scan\_frequency},
+        \file{maintenance\_window\_handling}…). \textbf{Obtener \file{type}/\file{vendor\_id} del
+        IX40 real (\gate{12}); no copiar el ejemplo TX64.}
+  \item Settings comunes vs por sitio (\file{/settings} y
+        \file{/settings/device?device\_id=…}); recordar que un \file{PUT} sustituye el árbol
+        enviado → declarar solo nodos administrados (\file{@managed}, \file{@scope},
+        \file{\#value}).
+  \item Validar el body de \file{scan\_now} contra \file{GET /ws/v1/configs} o el API Explorer
+        del tenant (\textbf{\gate{3}}); iniciar un scan y consultar
+        \file{GET /ws/v1/configs/compliance}.
+  \item Alarmas: \file{POST /ws/v1/alerts/inventory} (Device Offline con
+        \file{fire.parameters.reconnectWindowDuration}) + noncompliance.
+  \item \textbf{Push Monitor:} \file{POST /ws/v1/monitors/inventory}
+        (\file{type: http}, \file{topics: [alert\_status]}, \file{url} al SIEM,
+        \file{persistent: true}).
+\end{enumerate}
+
+\begin{clave}
+\small
+\done{} flujo completo observado con contratos validados: enrolamiento, golden config aplicada,
+scan/compliance, alarma disparada y evento recibido por el SIEM vía Push Monitor.
+\end{clave}
+
+\textbf{\embebido}
+\begin{itemize}
+  \item El agente recolecta \textbf{red local + ambientales} y envía al SIEM
+        (formato estructurado, mismo reloj NTP, ID por evento).
+\end{itemize}
+
+% ───────────
+\subsection{Día 5 — SureLink multicapa + primera campaña de failover nativo}
+
+\textbf{Objetivo:} failover afinado y \textbf{medido} (no ``ping ok'').
+
+\textbf{Pasos:}
+\begin{enumerate}
+  \item SureLink con pruebas \textbf{multicapa} e independientes: \file{interface\_up},
+        ping de gateway, ping externo, \file{dns}, \file{https} y equivalentes IPv6.
+        Múltiples destinos (evitar punto único de fallo).
+  \item Acciones \textbf{escalonadas}: subir métrica → reiniciar interfaz; reset de
+        módem/cambio de SIM solo tras fallos persistentes.
+  \item \textbf{Histéresis + hold-down} contra flapping; \textbf{failback} a Starlink solo
+        tras ventana estable.
+  \item Montar el testigo de medición: ping continuo + una videollamada/stream como carga real.
+  \item Ejecutar la \textbf{campaña representativa} (≈10 reps): desconexión física de Starlink
+        y blackhole aguas arriba (Ethernet up). Correlacionar cada inyección con un ID único.
+\end{enumerate}
+
+\begin{clave}
+\small
+\done{} para desconexión y blackhole, se tiene tiempo de detección, tiempo de conmutación y
+pérdida por repetición, con p50/p95; trazas correlacionadas con la alerta DRM.
+\end{clave}
+
+\textbf{\embebido}
+\begin{itemize}
+  \item Implementar \textbf{buffer offline + reenvío} del agente: al cortar la red, sigue
+        recolectando; al reconectar, reenvía sin perder datos.
+\end{itemize}
+
+\begin{nota}
+\small
+\stretchgoal{Semana 1:} detección ligera de anomalías en el agente (umbral/estadística simple sobre
+las series recolectadas).
+\end{nota}
+
+% ─────────────────────────────────────────────────────────────────
+\section{Semana 2 — Resiliencia avanzada, embebido a producción, clonado, pruebas, demo}
+
+% ───────────
+\subsection{Día 6 — WAN Bonding A/B + endurecimiento del agente embebido}
+
+\textbf{Objetivo:} comparar los dos mecanismos de resiliencia y endurecer el agente embebido
+(secure boot se difiere a fase posterior).
+
+\textbf{Pasos (in-band):}
+\begin{enumerate}
+  \item Aprovisionar el \textbf{servidor externo de WAN Bonding} (Tier 3, 1\,Gb/s) con
+        credenciales de túnel.
+  \item En el IX40: \file{network sdwan wan\_bonding}, meter \file{ETH1} y \file{Modem} en el
+        túnel, cifrado on. Estado con \file{show wan-bonding}.
+  \item Reproducir \textbf{el mismo impairment trace} del Día 5 y comparar native vs bonding:
+        continuidad de sesión, throughput, RTT, jitter, pérdida.
+\end{enumerate}
+
+\begin{clave}
+\small
+\done{} informe comparativo native vs bonding con el mismo trace; la sesión de la app de prueba
+\textbf{no} se resetea bajo bonding (objetivo pérdida ≤ 1\,\% en handoff).
+\end{clave}
+
+\textbf{\embebido}
+\begin{itemize}
+  \item \textbf{Endurecer el agente + validar resiliencia:} afinar la detección de anomalías y
+        repetir cortes de red bajo carga para confirmar buffer/replay sin pérdida.
+  \item \textit{TrustFence secure boot se movió a fase posterior (F2-C) por ser irreversible
+        (\file{trustfence close}) y de tiempo impredecible.}
+\end{itemize}
+
+% ───────────
+\subsection{Día 7 — Telemetría XBee + Digi Container + arranque de OTA}
+
+\textbf{Objetivo:} cerrar la telemetría física y el edge compute del router.
+
+\textbf{Pasos:}
+\begin{enumerate}
+  \item Emparejar el sensor \textbf{XBee 3 Zigbee} con el \textbf{Hive}; publicar la lectura
+        (temperatura/puerta/entrada digital) como \textbf{DataPoints} en DRM.
+  \item Desplegar un \textbf{Digi Container} ligero (collector de métricas) al IX40 desde DRM,
+        con \textbf{límites de recursos}.
+  \item Prueba de carga del container: demostrar que \textbf{no degrada} el plano de forwarding.
+\end{enumerate}
+
+\begin{clave}
+\small
+\done{} la telemetría llega por ambos underlays; uso de recursos del container medido y sin
+impacto en el forwarding.
+\end{clave}
+
+\textbf{\embebido}
+\begin{itemize}
+  \item Configurar \textbf{OTA} vía ConnectCore Cloud Services: \file{/etc/cccs.conf},
+        construir un paquete \file{.swu}, subirlo al \textbf{firmware repository de Remote
+        Manager} (p.\,ej.\ con \file{python-devicecloud}) y disparar una actualización de
+        prueba. \textit{(Stretch del sprint; completo en Anillo 2.)}
+\end{itemize}
+
+% ───────────
+\subsection{Día 8 — Clonado de sitio con automatización}
+
+\textbf{Objetivo:} demostrar que un sitio nuevo se levanta con un comando.
+
+\textbf{Pasos:}
+\begin{enumerate}
+  \item Modelar la config como \textbf{datos}: plantillas Jinja2 + variables por sitio
+        (ASN, prefijos, tunnel peer, nombres, carrier).
+  \item Envolver todo en Ansible/Python + \file{make deploy}: enrolamiento API → golden config
+        por grupo → settings por sitio → verificación.
+  \item Levantar el \textbf{Sitio B}:
+        \begin{itemize}
+          \item Si llegó el hardware → sitio \textbf{físico} clonado.
+          \item Si no → clonar contra un dispositivo de evaluación/simulado y
+                \textbf{documentar} que la limitación es de hardware, no de método.
+        \end{itemize}
+  \item Probar \textbf{idempotencia}: correr \file{make deploy} dos veces no rompe nada.
+\end{enumerate}
+
+\begin{clave}
+\small
+\done{} un segundo sitio gestionado surge del comando; el registro de auditoría
+(vía RADIUS/TACACS+ → SIEM) muestra cada acceso trazado; idempotencia demostrada.
+\end{clave}
+
+\begin{nota}
+\small
+\stretchgoal{GitOps} — un cambio en Git dispara la reconciliación de la config de la ``flota''.
+\end{nota}
+
+% ───────────
+\subsection{Día 9 — Campaña de caos + seguridad + congelar datos}
+
+\textbf{Objetivo:} ejercer un subconjunto de la matriz de fallos y dejar la evidencia limpia.
+
+\textbf{Pasos:}
+\begin{enumerate}
+  \item Ejecutar los fallos del sprint (ver \file{06-pruebas-y-demo.md} §Matriz):
+        desconexión Starlink, blackhole, DNS-only, drift de config, receiver de webhook offline.
+  \item Correlacionar \textbf{alarma ↔ evento Push Monitor ↔ ID de fallo}; probar
+        \textbf{replay} desde \file{GET /ws/v1/monitors/history/\{monitorId\}} tras dejar el
+        receiver caído.
+  \item Drift + \textbf{remediación} por Configuration Manager dentro de una maintenance window.
+  \item Revisión de seguridad: usuarios de aplicación separados, API keys con vencimiento,
+        MFA/RBAC, cero defaults, \textbf{cero secretos} en artefactos; sanitizar evidencia.
+\end{enumerate}
+
+\begin{clave}
+\small
+\done{} todos los casos del sprint tienen resultado, evidencia y dueño; replay comprobado;
+drift remediado; datasets congelados con versión de firmware/config.
+\end{clave}
+
+% ───────────
+\subsection{Día 10 — Empaquetado y demo}
+
+\textbf{Objetivo:} dejar el capstone entregable.
+
+\textbf{Pasos:}
+\begin{enumerate}
+  \item Diagrama \textbf{lógico} y \textbf{as-built}; BOM validada; documento de intención de
+        configuración por firmware.
+  \item Contrato de API DRM validado contra el tenant real (y Lighthouse en fase 2).
+  \item Runbook repetible (onboarding, failover, OOB, rollback, recuperación).
+  \item Grabar la \textbf{demo de 12 min} + versión de \textbf{90 s}; ensayar
+        (ver guion en \file{06-pruebas-y-demo.md} §Demo).
+  \item \textbf{One-pager ejecutivo} para el manager + \textbf{README sanitizado} para
+        portafolio.
+\end{enumerate}
+
+\begin{clave}
+\small
+\done{} demo de 12 min ensayada; paquete entregado al manager; versión pública sanitizada lista;
+backlog de gaps (G1–G12) con dueño recomendado.
+\end{clave}
+
+% ─────────────────────────────────────────────────────────────────
+\section{Fase 2 — Opengear + expansión (cuando llegue el hardware)}
+
+\begin{nota}
+\small
+Estos bloques \textbf{no} están en el camino crítico del sprint; se ejecutan cuando el hardware
+Opengear y las unidades 2-3 llegan. Mapea a las semanas 5–10 de plan2.
+\end{nota}
+
+\subsection{F2-A · OOB / Lighthouse}
+
+\begin{enumerate}
+  \item Cerrar \textbf{\gate{1}} (confirmar SKU \file{OM1304-4E-C-LSP}, revisión, región,
+        firmware) — o activar fallback \file{CM8004-C-LSP} + switch externo.
+  \item Enrolar el OM por \textbf{LSP} en Lighthouse Enhance
+        (\file{POST /nodes} con \file{enrollment};
+        \file{Authorization: Token \{session\}}).
+        Probar \textbf{factory reset/boot} para demostrar zero-touch
+        (\file{systemctl \{start,enable\} lsp}).
+  \item Consola serial del IX40 en modo \textbf{Login} (adaptador \file{319015}), acceso
+        restringido por RBAC.
+  \item Validar \file{runtime\_status.connection\_status} y \textbf{acceso a consola durante
+        pérdida total del plano in-band}.
+  \item Secure Provisioning downstream: \textbf{opcional}, hasta confirmar licencia en
+        Core/Enhance (\gate{2}/\gate{11}); observar progreso en syslog
+        \file{[NetOps-DOP device="MAC"]}.
+\end{enumerate}
+
+\subsection{F2-B · Tres sitios + rotación + 30 reps}
+
+\begin{enumerate}
+  \item Clonar Sitios B y C físicos con la automatización del Día 8.
+  \item Rotar perfiles \textbf{native/bonding/candidate} entre las tres unidades.
+  \item Campaña de \textbf{30 repeticiones} por fallo con p50/p95/p99 y datos brutos.
+\end{enumerate}
+
+\subsection{F2-C · Embebido a producción}
+
+\begin{enumerate}
+  \item \textbf{TrustFence secure boot:} generar claves, \file{SRK\_efuses.bin},
+        firmar U-Boot + kernel, \file{trustfence close}
+        (\textbf{irreversible}; practicar en unidad sacrificable),
+        cifrado de rootfs (\file{CONFIG\_FS\_ENCRYPTION}, datos en \file{/mnt/data/private}).
+  \item \textbf{OTA completo} del agente (\file{.swu} por CCCS) sin ladrillar el dispositivo.
+  \item Carril \textbf{OEM} con el MP255 (TSN/NPU) en Site C.
+  \item Lazo de \textbf{auto-remediación}: árbol de decisión según tipo de fallo,
+        verificación post-remediación y rollback.
+\end{enumerate}
+
+\begin{aviso}
+\small
+\textbf{\file{trustfence close} es irreversible.} Ejecutar únicamente con la imagen ya estable
+y en una unidad sacrificable de prueba antes de aplicar a producción.
+\end{aviso}
+
+% ─────────────────────────────────────────────────────────────────
+\section{Notas de secuenciación}
+
+\begin{itemize}
+  \item \textbf{Yocto arranca el Día 1} porque el primer build tarda horas; si esperara a la
+        semana 2, bloquearía el track central.
+  \item \textbf{DRM-as-code (Día 4) antes del clonado (Día 8):} no puedes clonar lo que aún no
+        modelaste como datos.
+  \item \textbf{SureLink medido (Día 5) antes de Bonding (Día 6):} necesitas el baseline nativo
+        para que la comparación A/B signifique algo.
+  \item \textbf{\file{trustfence close} es irreversible:} por eso \textbf{no} entra en el sprint;
+        se ejecuta en fase posterior (F2-C) con la imagen ya estable.
+  \item \textbf{Opengear fuera del camino crítico:} su retraso no puede frenar el sprint;
+        entra completo en fase 2.
+\end{itemize}
+
+\end{document}

@@ -1,0 +1,459 @@
+% Compilar con:  latexmk -xelatex 03-arquitectura.tex
+\documentclass[11pt,a4paper]{article}
+
+\usepackage{fontspec}
+\usepackage[spanish,es-noshorthands]{babel}
+\usepackage{geometry}
+\geometry{margin=2.4cm}
+\usepackage{xcolor}
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{fancyhdr}
+\usepackage[most]{tcolorbox}
+\usepackage{newunicodechar}
+\usepackage{hyperref}
+\usepackage{fvextra}
+
+% Fuente monoespaciada con soporte de caracteres box-drawing
+\setmonofont{DejaVu Sans Mono}[Scale=0.82]
+
+% Entorno para bloques de código (verbatim con font Unicode)
+\DefineVerbatimEnvironment{Diagram}{Verbatim}{%
+  fontfamily=tt, fontsize=\small,
+  breaklines=false, commandchars=\\\{\}}
+
+% --- Símbolos Unicode ---
+\newunicodechar{→}{\ensuremath{\rightarrow}}
+\newunicodechar{←}{\ensuremath{\leftarrow}}
+\newunicodechar{≤}{\ensuremath{\leq}}
+\newunicodechar{≥}{\ensuremath{\geq}}
+\newunicodechar{×}{\ensuremath{\times}}
+\newunicodechar{≈}{\ensuremath{\approx}}
+\newunicodechar{·}{\textperiodcentered}
+\newunicodechar{†}{\textsuperscript{\dag}}
+
+% --- Colores y estilo (coherentes con el resto del paquete) ---
+\definecolor{accent}{HTML}{0F6E8C}
+\definecolor{accentdark}{HTML}{0A4B60}
+\definecolor{soft}{HTML}{F2F6F8}
+\definecolor{diagbg}{HTML}{F8FAFB}
+
+\titleformat{\section}{\Large\bfseries\color{accentdark}}{\thesection}{0.6em}{}
+\titleformat{\subsection}{\large\bfseries\color{accent}}{\thesubsection}{0.6em}{}
+\titleformat{\subsubsection}{\normalsize\bfseries\color{accent}}{\thesubsubsection}{0.5em}{}
+\titlespacing*{\section}{0pt}{1.4em}{0.5em}
+\titlespacing*{\subsection}{0pt}{1.0em}{0.4em}
+
+\setlist[itemize]{leftmargin=1.3em,itemsep=2pt,topsep=3pt}
+\setlist[enumerate]{leftmargin=1.6em,itemsep=2pt,topsep=3pt}
+
+\renewcommand{\arraystretch}{1.25}
+\setlength{\emergencystretch}{3em}
+\setlength{\tabcolsep}{5pt}
+
+\hypersetup{
+  colorlinks=true, linkcolor=accent, urlcolor=accent, citecolor=accent,
+  pdftitle={03 · Arquitectura — Starlink-Primary Resilient Gateway Lab},
+  pdfauthor={Capstone de internship · Digi International}
+}
+
+% Cajas
+\newtcolorbox{nota}{colback=soft,colframe=accent!35,boxrule=0.5pt,arc=2pt,
+  left=8pt,right=8pt,top=5pt,bottom=5pt}
+\newtcolorbox{clave}{colback=accent!6,colframe=accent,boxrule=1pt,arc=2pt,
+  left=10pt,right=10pt,top=7pt,bottom=7pt}
+\newtcolorbox{diagbox}{colback=diagbg,colframe=accent!25,boxrule=0.4pt,arc=2pt,
+  left=6pt,right=6pt,top=6pt,bottom=6pt}
+
+% Encabezado / pie
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\color{accentdark}03 · Arquitectura}
+\fancyhead[R]{\small\color{accentdark}Starlink-Primary Gateway Lab}
+\fancyfoot[C]{\small\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0pt}
+
+\newcommand{\hcell}[1]{\textbf{#1}}
+\newcommand{\file}[1]{\texttt{#1}}
+
+% ─────────────────────────────────────────────────────────────────
+\begin{document}
+
+\begin{center}
+  {\Huge\bfseries\color{accentdark} Arquitectura}\\[6pt]
+  {\large Estructura de cómo quedaría el laboratorio}\\[2pt]
+  {\normalsize Digi Starlink-Primary Resilient Gateway Fleet}\\[10pt]
+  {\small Capstone de internship · Digi International \quad|\quad Julio 2026}
+\end{center}
+
+\vspace{4pt}
+\begin{nota}
+\small
+Este documento describe \textbf{cómo se ve el laboratorio montado}: topología, cableado y
+separación por sitio, direccionamiento y plan de AS, protocolos, y flujo de datos.
+Es la referencia visual y de contratos; los pasos para llegar aquí están en
+\file{04-pasos-montaje.md}.
+
+\medskip
+\textbf{Convención:} un sitio en el sprint (Anillo 0), tres sitios idénticos en la expansión
+(Anillo 1/2). Todo el hardware base es idéntico entre sitios; solo cambia el
+\textbf{perfil} (\textit{native / bonding / candidate}) que se rota entre unidades.
+\end{nota}
+
+\vspace{2pt}
+{\small\tableofcontents}
+\vspace{6pt}
+
+% ─────────────────────────────────────────────────────────────────
+\section{Vista de conjunto (dos planos + control central)}
+
+\begin{diagbox}
+\begin{Verbatim}[fontsize=\footnotesize]
+                     ┌───────────────────────────────────────────────┐
+                     │         CONTROL CENTRAL (nube + host)          │
+                     │                                                │
+Internet ───────────►│  • Digi Remote Manager Premier (cloud)         │
+                     │  • Core / route-collector  AS65000             │
+                     │  • Terminación de overlay (IKEv2/IPsec)        │
+                     │  • SIEM / receptor de Push Monitor (webhook)   │
+                     │  • Plataforma de impairment (loss/jitter/lat.) │
+                     │  • Servidor externo Digi WAN Bonding (Tier 3)  │
+                     │  • [Fase 2] Lighthouse Enhance VM              │
+                     └─────────────▲──────────────────▲──────────────┘
+                                   │ overlay + BGP     │ gestión (HTTPS/API)
+     ┌─────────────────────────────┼───────────────────┼─────────────────┐
+     │                             │                   │                 │
+┌────┴─────────┐           ┌───────┴──────┐     ┌──────┴───────┐
+│  SITIO A     │           │  SITIO B     │     │  SITIO C     │
+│  AS65001     │           │  AS65002     │     │  AS65003     │
+│  perfil:     │           │  perfil:     │     │  perfil:     │
+│  native      │           │  bonding     │     │  candidate   │
+└──────────────┘           └──────────────┘     └──────────────┘
+  (Anillo 0: solo Sitio A en el sprint; B y C en expansión)
+\end{Verbatim}
+\end{diagbox}
+
+\medskip
+Dos planos deliberadamente separados:
+
+\begin{itemize}
+  \item \textbf{Plano in-band (producción):} Starlink + 5G del IX40 → overlay → BGP → servicio.
+        Es el que falla en las pruebas.
+  \item \textbf{Plano out-of-band (rescate, fase 2):} Opengear OM1304 con
+        \textbf{5G de otro carrier y otra energía} → Lighthouse. Debe seguir accesible cuando el
+        in-band cae. Si compartieran energía o carrier, el supuesto de independencia sería falso.
+\end{itemize}
+
+% ─────────────────────────────────────────────────────────────────
+\section{Anatomía de un sitio}
+
+\begin{diagbox}
+\begin{Verbatim}[fontsize=\footnotesize]
+                   ┌───────────── SITIO (AS6500x) ─────────────────────┐
+                   │                                                    │
+Starlink           │  Starlink dishy ──(WAN primaria)──► IX40 WAN/ETH1 │
+Performance Kit    │                                       (cobre)      │
+(Gen 3)            │                                                    │
+                   │  IX40 módem 5G ──(WAN backup in-band)─────────────►│
+Carrier A (5G) ───►│                                                    │
+                   │  IX40-05 ──SFP/ETH5 (1 Gb/s, SFP NO SFP+)──►      │
+                   │     │        fabric de servicio (red anunciada     │
+                   │     │        por BGP; IPv4 /24 + IPv6 /64)         │
+                   │     │                                              │
+                   │     ├── mgmt Ethernet ──► switch de gestión        │
+                   │     │                                              │
+                   │     ├── Digi Container (collector de métricas,     │
+                   │     │     límites de recursos)                     │
+                   │     │                                              │
+                   │     └── DB9 serial ──► [Fase 2] OM1304 (Login)    │
+                   │                                                    │
+                   │  XBee Hive ──► LAN sitio ; XBee 3 Zigbee ──► sensor│
+                   │     (temperatura / puerta / entrada digital)       │
+                   │                                                    │
+                   │  ConnectCore MP255 (sensor embebido)               │
+                   │     • imagen DEY (Yocto); secure boot: fase 2      │
+                   │     • agente → SIEM (buffer offline + replay)      │
+                   │     • OTA vía ConnectCore Cloud Services (DRM)     │
+                   │                                                    │
+                   │  [Fase 2] OM1304-4E-C-LSP (OOB):                  │
+                   │     • 5G Carrier B (independiente)                 │
+                   │     • switch de gestión 4 puertos                  │
+                   │     • consola serial al IX40                       │
+                   │                                                    │
+                   │  Energía: PDU/UPS primaria (Starlink, IX40, carga) │
+                   │           PDU/UPS secundaria (OOB + su módem)      │
+                   └────────────────────────────────────────────────────┘
+\end{Verbatim}
+\end{diagbox}
+
+% ─────────────────────────────────────────────────────────────────
+\section{Cableado y separación (paso a paso, por sitio)}
+
+\begin{enumerate}
+  \item \textbf{Starlink Performance Kit → IX40 \file{WAN/ETH1} (cobre).}
+        \file{SFP/ETH1} queda \textbf{vacío}: al poblarlo se desactiva el puerto de cobre
+        (son mutuamente excluyentes). Ver G6 para el SFP validado del segundo socket.
+
+  \item \textbf{IX40 módem 5G → Carrier A.} WAN de respaldo in-band, con SIM/APN propio.
+
+  \item \textbf{IX40 \file{SFP/ETH5} → fabric/carga de gateway (fibra 1\,Gb/s).}
+        Aquí vive la red de servicio que el sitio anuncia por BGP.
+        \textbf{Solo SFP, nunca SFP+} (límite deliberado del IX40).
+        \file{SFP/ETH5} \textbf{sí} es independiente del par cobre/SFP de ETH1.
+
+  \item \textbf{[Fase 2] OM1304 5G → Carrier B}, distinto del IX40, con antenas y
+        alimentación separadas.
+
+  \item \textbf{[Fase 2] OM1304 serial → DB9 del IX40.} El puerto IX40 en modo \file{Login};
+        el IX40 es DTE RS-232 y el adaptador Opengear para X2/DTE es \textbf{\texttt{319015}}
+        (DB9F–RJ45 crossover). Validar baud rate, 8N1 y flow control en banco.
+
+  \item \textbf{[Fase 2] OM1304 Ethernet management switch → management del IX40, Hive y PDU.}
+        Este enlace \textbf{no} transporta producción.
+
+  \item \textbf{Hive → LAN del sitio; XBee 3 Zigbee → sensor físico.}
+        El sensor mide temperatura, estado de puerta/alimentación o una entrada digital;
+        \textbf{no} forma parte del forwarding crítico.
+
+  \item \textbf{ConnectCore MP255 → LAN de gestión del sitio} (Ethernet).
+        Recolecta red local + ambientales y envía al SIEM; recibe OTA por CCCS.
+
+  \item \textbf{Energía:} Starlink, IX40 y carga en PDU/UPS \textbf{primaria};
+        Opengear y su módem en circuito/UPS \textbf{secundario}.
+\end{enumerate}
+
+% ─────────────────────────────────────────────────────────────────
+\section{Direccionamiento y plan de routing}
+
+\subsection{Underlay (medido, nunca asumido)}
+
+\begin{tabularx}{\linewidth}{@{}>{\bfseries}p{2.8cm}X>{\raggedright\arraybackslash}p{4.8cm}@{}}
+\toprule
+\hcell{Underlay} & \hcell{Detalle} & \hcell{A medir / registrar} \\
+\midrule
+Starlink &
+  DHCPv4; donde se entregue, SLAAC (\texttt{/64}) + DHCPv6-PD (\texttt{/56}).
+  CGNAT \texttt{100.64.0.0/10} por defecto; IPv4 pública opcional en planes Priority. &
+  CGNAT vs.\ pública, IPv6-PD observado, MTU, latencia, jitter (G9). \\
+5G IX40 (Carrier A) &
+  SIM/APN propio. &
+  IPv4/IPv6, MTU, NAT, soporte 5G SA/APN (G10). \\
+{[Fase 2]} 5G OM1304 (Carrier B) &
+  Otro operador, otro plano de energía. &
+  Independencia real respecto a Starlink y Carrier A. \\
+\bottomrule
+\end{tabularx}
+
+\subsection{Overlay y BGP}
+
+\begin{diagbox}
+\begin{Verbatim}[fontsize=\footnotesize]
+      AS65000  (core / route-collector, endpoint público del overlay)
+         ^           ^           ^
+ eBGP   |           |           |   eBGP (sobre overlay IKEv2/IPsec)
+         |           |           |
+    AS65001      AS65002      AS65003
+    Sitio A      Sitio B      Sitio C
+    /24 v4       /24 v4       /24 v4     <- cada sitio origina 1 red IPv4 RFC1918
+    /64 v6       /64 v6       /64 v6     <- y 1 IPv6 de documentación (2001:db8::/32)
+\end{Verbatim}
+\end{diagbox}
+
+\begin{itemize}
+  \item \textbf{Overlay} iniciado por el sitio hacia un endpoint central público.
+        Baseline: \textbf{IKEv2/IPsec route-based con NAT traversal}
+        (obligatorio por el CGNAT de Starlink). DMVPN es variante documentada por DAL,
+        pero no baseline hasta probarla tras CGNAT.
+  \item \textbf{eBGP} sobre el overlay entre cada IX40 y el core/collector.
+  \item \textbf{Políticas:} prefix-lists de entrada/salida, límite máximo de prefijos,
+        prohibición de anunciar default salvo prueba explícita, sin redistribución automática
+        entre BGP y rutas de administración.
+  \item \textbf{IPv6 de documentación} \texttt{2001:db8::/32}: jamás se anuncia a Internet.
+  \item El core AS65000 es \textbf{estándar y vendor-neutral} porque Digi no vende un router
+        de backbone carrier.
+  \item \textbf{Pregunta abierta que el lab mide, no declara:} si el cambio Starlink→5G
+        mantiene el túnel/BGP o provoca reconvergencia.
+\end{itemize}
+
+\subsection{Failover nativo (SureLink) — árbol DAL}
+
+\begin{diagbox}
+\begin{Verbatim}[fontsize=\footnotesize]
+network interface {ETH1|Modem}
+  |- ipv4 metric      (ETH1=1 menor -> mayor prioridad ; Modem=3)
+  |- ipv4/ipv6 weight (métricas iguales + pesos -> ECMP; NO es bonding)
+  `- surelink
+       |- enable true
+       |- tests   -> interface_up · ping(gateway) · ping(externo)
+       |            · dns · http/https · variantes IPv6 · custom
+       `- actions -> subir métrica · reiniciar interfaz · reset módem
+                    · cambiar SIM · reboot · custom · power-cycle módem
+\end{Verbatim}
+\end{diagbox}
+
+Reglas de diseño:
+\textbf{múltiples destinos} (evitar que el monitor sea un nuevo punto único de fallo),
+\textbf{acciones escalonadas} (primero métrica/reinicio; reset de módem/cambio de SIM solo tras
+fallos persistentes), \textbf{histéresis + hold-down} contra flapping, y
+\textbf{failback automático a Starlink solo tras una ventana estable}.
+
+\subsection{WAN Bonding (experimento A/B)}
+
+\begin{itemize}
+  \item UI \texttt{Network > SD-WAN > WAN bonding}; CLI \texttt{network sdwan wan\_bonding};
+        estado \texttt{show wan-bonding}.
+  \item Requiere licencia habilitada en DRM + \textbf{servidor externo/VPS de bonding}
+        + credenciales de túnel.
+  \item Interfaces \texttt{ETH1} y \texttt{Modem} dentro del túnel; cifrado habilitado.
+  \item Tier 3 de \textbf{1\,Gb/s} para que la licencia no sea el cuello de botella.
+  \item Perfiles a comparar si la versión los expone: Automatic, Low Latency,
+        Cellular Optimized.
+  \item \textbf{Es una prueba separada} del failover por métrica/SureLink,
+        con el \textbf{mismo} impairment trace.
+\end{itemize}
+
+% ─────────────────────────────────────────────────────────────────
+\section{Plano de gestión unificado}
+
+\begin{clave}
+\small
+El punto clave: \textbf{un solo plano de gestión} (DRM) opera routers, containers,
+telemetría RF \textbf{y} el OTA del sensor embebido. No hay tres consolas distintas.
+\end{clave}
+
+\medskip
+\begin{diagbox}
+\begin{Verbatim}[fontsize=\footnotesize]
+        ┌──────────────── Digi Remote Manager Premier ───────────────┐
+        │                                                            │
+IX40    │  • Configuration Manager (golden config + settings/sitio)  │
+ ──────►│  • Alerts (Device Offline, noncompliance)                  │
+        │  • Push Monitor (webhook http, topic alert_status) -> SIEM │
+XBee    │  • Data streams / DataPoints (telemetría RF)               │
+Hive ──►│  • Digi Containers (despliegue del collector al IX40)      │
+        │                                                            │
+Conn.   │  • ConnectCore Cloud Services (CCCS):                      │
+Core ──►│      OTA .swu <- firmware repository de Remote Manager     │
+MP255   │      (mismo tenant que gestiona los routers)               │
+        └────────────────────────────────────────────────────────────┘
+\end{Verbatim}
+\end{diagbox}
+
+\medskip
+\subsubsection*{API — contratos base (validados)}
+
+\begin{tabularx}{\linewidth}{@{}>{\bfseries}p{2.4cm}Xp{4.6cm}@{}}
+\toprule
+\hcell{Sistema} & \hcell{Base} & \hcell{Auth} \\
+\midrule
+DRM &
+  \texttt{https://remotemanager.digi.com} · REST v1 \texttt{/ws/v1/*}
+  (heredado XML/SCI \texttt{/ws/*} solo si no hay v1) &
+  Basic, o API key con cabeceras \texttt{X-API-KEY-ID} /
+  \texttt{X-API-KEY-SECRET}
+  (\texttt{POST /ws/v1/api\_keys/inventory}). \\
+Lighthouse (fase 2) &
+  \texttt{https://\{host\}/api/v3.7} &
+  \texttt{POST /sessions} → \texttt{session};
+  luego \texttt{Authorization: Token \{session\}}
+  (no \texttt{Bearer}). \\
+\bottomrule
+\end{tabularx}
+
+% ─────────────────────────────────────────────────────────────────
+\section{Consolidación de funciones (qué corre dónde y por qué)}
+
+\begin{tabularx}{\linewidth}{@{}>{\bfseries}p{3.0cm}p{3.0cm}Xp{3.2cm}@{}}
+\toprule
+\hcell{Función} & \hcell{Dónde corre} & \hcell{Ventaja} & \hcell{Riesgo / mitigación} \\
+\midrule
+Collector de métricas de red &
+  Digi Container en el IX40 &
+  Menos hardware; despliegue central desde DRM; demuestra Containers. &
+  Comparte CPU/RAM con el router → \textbf{límites de recursos + prueba de carga} para probar
+  que no degrada el forwarding. \\
+\addlinespace
+Adquisición RF / lógica de sensores &
+  XBee Hive &
+  Aísla la app del forwarding; añade radio XBee. &
+  Otro equipo/licencia/superficie; aceptable por el aislamiento. \\
+\addlinespace
+Sensor embebido / detección de anomalías &
+  ConnectCore MP255 &
+  Carril de software embebido (Yocto en Ring 0; secure boot/OTA en fase 2); diferenciador
+  Starlink. &
+  Es el track más difícil; ver \file{05-embebido-connectcore.md} y riesgos R-E*. \\
+\addlinespace
+OOB / rescate &
+  Opengear OM1304 (fase 2) &
+  Independiente en carrier y energía. &
+  Se mantiene \textbf{austero} a propósito: el equipo que rescata la red no debe cargar
+  experimentos. \\
+\bottomrule
+\end{tabularx}
+
+% ─────────────────────────────────────────────────────────────────
+\section{Topología de tres sitios y rotación de perfiles (expansión)}
+
+\begin{tabularx}{\linewidth}{@{}>{\bfseries}p{3.2cm}Xp{4.2cm}@{}}
+\toprule
+\hcell{Zona} & \hcell{Componentes} & \hcell{Función / perfil} \\
+\midrule
+Control central &
+  DRM Premier, core/collector AS65000, SIEM, impairment, servidor WAN Bonding,
+  [fase 2] Lighthouse Enhance &
+  Gestión de ambos planos, terminación de overlay, telemetría, alarmas, pruebas. \\
+\addlinespace
+Sitio A — AS65001 &
+  Starlink → IX40+5G; [fase 2] OM1304; Hive+XBee; MP255; carga tras SFP &
+  Perfil \textbf{native} (control): failover por métricas + SureLink. \\
+\addlinespace
+Sitio B — AS65002 &
+  Igual que A &
+  Perfil \textbf{bonding}: Starlink y 5G dentro del túnel agregado.
+  \textbf{OOB con Digi Connect IT 4} (en lugar del OM1304). \\
+\addlinespace
+Sitio C — AS65003 &
+  Igual que A; MP255 como carril OEM opcional &
+  Perfil \textbf{candidate/chaos}: Containers, config nueva, firmware candidato. \\
+\bottomrule
+\end{tabularx}
+
+\medskip
+\begin{nota}
+\small
+Tras la primera campaña, los \textbf{perfiles A/B/C se rotan entre las tres unidades físicas}
+para eliminar el sesgo de una unidad, un terminal Starlink o una celda concreta.
+\end{nota}
+
+% ─────────────────────────────────────────────────────────────────
+\section{Resumen de contratos de direccionamiento}
+
+\begin{tabularx}{\linewidth}{@{}>{\bfseries}p{3.4cm}p{4.8cm}X@{}}
+\toprule
+\hcell{Elemento} & \hcell{Valor} & \hcell{Nota} \\
+\midrule
+AS central      & \textbf{65000}                        & Core/collector vendor-neutral. \\
+AS sitios       & \textbf{65001 / 65002 / 65003}        & Uno por sitio. \\
+Red IPv4 / sitio & RFC1918 \texttt{/24}                 & Detrás de \texttt{SFP/ETH5}. \\
+Red IPv6 / sitio & Documentación \texttt{/64} dentro de \texttt{2001:db8::/32} &
+                   Nunca anunciada a Internet. \\
+Overlay         & IKEv2/IPsec route-based + NAT-T       & Baseline; DMVPN a evaluar. \\
+Starlink IPv4   & CGNAT \texttt{100.64.0.0/10} (pública opcional) & Registrar el observado (G9). \\
+SFP             & Solo \textbf{1\,Gb/s SFP}             & \textbf{Prohibido SFP+}; P/N validado en G6. \\
+\bottomrule
+\end{tabularx}
+
+\vspace{1em}
+\begin{nota}
+\small
+Todo lo anterior se materializa siguiendo \file{04-pasos-montaje.md}.
+Los supuestos marcados (G*) se cierran según \file{07-riesgos-y-verificaciones.md}
+\textbf{antes} de depender de ellos.
+\end{nota}
+
+\end{document}

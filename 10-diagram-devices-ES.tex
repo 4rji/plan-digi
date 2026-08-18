@@ -1,0 +1,153 @@
+% ============================================================
+% Diagrama del laboratorio - Funcion de cada aparato, Espanol
+% Complemento de assets/lab-diagram-tabloid-EN.pdf
+% Compilar: pdflatex 10-diagram-devices-ES.tex  (dos veces)
+% ============================================================
+\documentclass[10pt,letterpaper]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[spanish,es-noshorthands]{babel}
+\usepackage[letterpaper,margin=0.9in,top=0.8in,bottom=0.9in]{geometry}
+\usepackage[scaled=.96]{helvet}
+\renewcommand{\familydefault}{\sfdefault}
+\usepackage{microtype}
+\usepackage[table]{xcolor}
+\usepackage{array}
+\usepackage{longtable}
+\usepackage{titlesec}
+\usepackage{enumitem}
+\usepackage{fancyhdr}
+\PassOptionsToPackage{hyphens}{url}
+\usepackage[colorlinks=true, urlcolor=PrimaryBlue, linkcolor=PrimaryBlue]{hyperref}
+
+% ---- Paleta (igual al diagrama + pitch) --------------------
+\definecolor{AccentBlue}{HTML}{3A83C2}
+\definecolor{PrimaryBlue}{HTML}{1B5A8F}
+\definecolor{Slate}{HTML}{273140}
+\definecolor{Muted}{HTML}{5A6470}
+\definecolor{DigiGreen}{HTML}{5B9E31}
+\definecolor{Fase2Orange}{HTML}{D97706}
+\definecolor{RFViolet}{HTML}{7A4FA0}
+
+% ---- Layout ------------------------------------------------
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{3.5pt}
+\setcounter{secnumdepth}{0}
+\titleformat{\section}
+  {\large\bfseries\color{PrimaryBlue}}{}{0pt}{}
+  [{\vspace{-2pt}\color{AccentBlue}\titlerule[1.1pt]}]
+\titlespacing*{\section}{0pt}{10pt}{4pt}
+\setlist[itemize]{leftmargin=1.2em, itemsep=2pt, topsep=2pt,
+  label=\textcolor{AccentBlue}{\textbullet}}
+
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\fancyfoot[L]{\footnotesize\color{Muted} Diagrama del laboratorio --- Funci\'on de cada aparato \textbullet\ fuente: assets/lab-diagram-tabloid-EN.tex}
+\fancyfoot[R]{\footnotesize\color{Muted} P\'agina \thepage}
+
+% ---- Helpers -----------------------------------------------
+\newcommand{\kf}[1]{\textbf{\textcolor{PrimaryBlue}{#1}}}
+\newcommand{\swatch}[1]{\textcolor{#1}{\rule[1pt]{16pt}{3pt}}}
+\newcommand{\notebox}[1]{%
+  \setlength{\fboxsep}{9pt}\setlength{\fboxrule}{0.8pt}%
+  \noindent\fcolorbox{Fase2Orange}{Fase2Orange!7}{%
+  \begin{minipage}{\dimexpr\linewidth-2\fboxsep-2\fboxrule\relax}#1\end{minipage}}}
+
+% tablas de aparatos: 2 columnas, cabecera se repite al cambiar de pagina
+\newcommand{\dtophead}{%
+  \rowcolor{PrimaryBlue}{\color{white}\bfseries Aparato} & {\color{white}\bfseries Funci\'on}\\}
+\newenvironment{devtable}{%
+  \setlength{\arrayrulewidth}{0.4pt}\arrayrulecolor{black!15}%
+  \renewcommand{\arraystretch}{1.28}%
+  \begin{longtable}{@{}>{\raggedright\arraybackslash}p{4.4cm}@{\hspace{9pt}}>{\raggedright\arraybackslash}p{11.9cm}@{}}
+  \dtophead \hline \endfirsthead \dtophead \hline \endhead}
+  {\end{longtable}}
+
+\begin{document}
+
+% ---- Titulo ------------------------------------------------
+{\color{AccentBlue}\rule{\linewidth}{4pt}}
+\vspace{7pt}
+{\LARGE\bfseries\color{Slate} Diagrama del laboratorio --- Funci\'on de cada aparato\par}
+\vspace{3pt}
+{\large\bfseries\color{PrimaryBlue} Referencia complementaria del diagrama tabloide\par}
+\vspace{3pt}
+{\small\color{Muted} Starlink-Primary Resilient Gateway Reference Lab \textbullet\ Digi International \textbullet\ julio 2026\par}
+
+\vspace{6pt}
+Complemento de \href{run:assets/lab-diagram-tabloid-EN.pdf}{\texttt{assets/lab-diagram-tabloid-EN.pdf}}. Lista \kf{qu\'e hace cada aparato del diagrama}. Este documento \textbf{no} modifica el diagrama; solo lo explica.
+
+\vspace{2pt}
+{\small\color{Muted}\textit{Convenci\'on: un sitio en el sprint (Anillo 0 = Sitio A); tres sitios + control central en la expansi\'on (Anillos 1--2). Todo el hardware base es id\'entico entre sitios; solo cambia el perfil (native / bonding / candidate) que se rota entre unidades.}}
+
+% ---- Control central ---------------------------------------
+\section{Control central --- nube + host del lab (Proxmox) \textbullet\ AS65000}
+\begin{devtable}
+\textbf{Digi Remote Manager Premier} (nube) & Plano \'unico de gesti\'on: golden config + ajustes por sitio, alertas (Device Offline / noncompliance), webhook Push Monitor $\rightarrow$ SIEM, despliegue de Digi Containers y OTA por CCCS del sensor embebido. \\ \hline
+\textbf{Core / route collector} & Endpoint p\'ublico del overlay (IKEv2/IPsec) y peer eBGP de cada sitio (AS65000). Recoge la red que origina cada sitio. \\ \hline
+\textbf{SIEM} & Recibe los webhooks de Push Monitor y el stream del agente del MP255; correlaci\'on de eventos / seguridad. \\ \hline
+\textbf{Plataforma de impairment} & Inyecta p\'erdida / jitter / latencia controlados para reproducir condiciones Starlink durante las pruebas. \\ \hline
+\textbf{Servidor WAN Bonding} & Servidor externo Tier 3 (1 Gb/s) que exige el experimento de WAN bonding (A/B vs SureLink). \\ \hline
+\textbf{Lighthouse Enhance VM} \textit{(Fase 2)} & Plano de gesti\'on OOB de Opengear. \kf{Solo se necesita si el aparato OOB es el Opengear OM1304}; con un \kf{Digi Connect IT 4} el OOB se gestiona desde Digi Remote Manager (sin VM aparte). \\
+\end{devtable}
+
+% ---- Sitio A -----------------------------------------------
+\section{Sitio A --- AS65001 \textbullet\ perfil NATIVE \textbullet\ Anillo 0 (sprint de 2 semanas)}
+\begin{devtable}
+\textbf{Starlink Performance Kit (Gen 3)} & WAN primaria. Cobre a \texttt{WAN/ETH1} del IX40; entrega CGNAT \texttt{100.64.0.0/10} (IPv4 p\'ublica opcional). \\ \hline
+\textbf{Carrier A --- 5G} & WAN de respaldo in-band por el m\'odem 5G del IX40; SIM/APN propio. \\ \hline
+\textbf{Digi IX40-05} & El gateway resiliente. Corre el failover SureLink, el overlay IKEv2/IPsec, eBGP (AS65001) y el Digi Container. \\ \hline
+\textbf{Digi Container} & Collector de m\'etricas que corre \textbf{en} el IX40 con l\'imites de recursos (demuestra Containers sin degradar el forwarding). \\ \hline
+\textbf{Service fabric (switch)} & Red de servicio detr\'as de \texttt{SFP/ETH5} (SFP 1 Gb/s, nunca SFP+): IPv4 \texttt{/24} + IPv6 \texttt{/64} anunciada por eBGP. \\ \hline
+\textbf{Digi XBee Hive} & Gateway de RF; a\'isla la app de sensores del forwarding de paquetes. \\ \hline
+\textbf{Digi XBee 3 (Zigbee)} & Radio Zigbee que enlaza el Hive con el sensor f\'isico. \\ \hline
+\textbf{Sensor f\'isico} & Mide temperatura / estado de puerta / una entrada digital; no forma parte del forwarding cr\'itico. \\ \hline
+\textbf{Digi ConnectCore MP255} & SoM embebido. Imagen DEY (Yocto); agente $\rightarrow$ SIEM (buffer offline + replay); OTA v\'ia CCCS. \\ \hline
+\textbf{Console server OOB} \textit{(Fase 2)} --- \textbf{Opengear OM1304-4E-C-LSP} y/o \textbf{Digi Connect IT 4} & Rescate out-of-band: consola serial (DB9, modo \texttt{Login}) al IX40, \kf{5G Carrier B} independiente, switch de gesti\'on y energ\'ia independiente. Dos opciones intercambiables --- ver la nota abajo. Candidato a desplegarse en el \kf{Sitio B}. \\ \hline
+\textbf{Carrier B --- 5G} & Carrier independiente que alimenta el plano OOB (operador y energ\'ia distintos a Carrier A / Starlink). \\ \hline
+\textbf{PDU/UPS primaria} & Alimenta Starlink + IX40 + carga. \\ \hline
+\textbf{PDU/UPS secundaria} & Alimenta el aparato OOB + m\'odem B (plano de energ\'ia independiente). \\
+\end{devtable}
+
+% ---- Sitios B y C ------------------------------------------
+\section{Sitios B y C (expansi\'on \textbullet\ Anillos 1--2)}
+\begin{devtable}
+\textbf{Sitio B --- AS65002} & Hardware id\'entico al Sitio A. Perfil \kf{BONDING}: Starlink + 5G dentro del t\'unel agregado. \kf{OOB previsto con Digi Connect IT 4}. \\ \hline
+\textbf{Sitio C --- AS65003} & Id\'entico al Sitio A. Perfil \kf{CANDIDATE / CHAOS}: containers, config y firmware candidatos; rotaci\'on de perfiles A/B/C. \\
+\end{devtable}
+
+% ---- Opciones OOB ------------------------------------------
+\section{Console server OOB --- dos opciones intercambiables}
+Ambos hacen el mismo trabajo en el diagrama (consola serial al IX40 + 5G independiente + energ\'ia propia). Se diferencian sobre todo en el plano de gesti\'on:
+
+\vspace{4pt}
+{\setlength{\arrayrulewidth}{0.4pt}\arrayrulecolor{black!15}\renewcommand{\arraystretch}{1.28}%
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{3.3cm}@{\hspace{8pt}}>{\raggedright\arraybackslash}p{6.4cm}@{\hspace{8pt}}>{\raggedright\arraybackslash}p{6.4cm}@{}}
+\rowcolor{PrimaryBlue}{\color{white}\bfseries\ } & {\color{white}\bfseries Opengear OM1304-4E-C-LSP} & {\color{white}\bfseries Digi Connect IT 4}\\ \hline
+\textbf{Serial al IX40} & DB9 $\leftrightarrow$ RJ45, adaptador \textbf{319015} (pinout Opengear X2) & RJ45 RS-232, cable con pinout Digi/Cisco \\ \hline
+\textbf{Celular} & 5G Carrier B & LTE Cat 4 Carrier B (m\'odem Digi CORE) \\ \hline
+\textbf{Puertos de gesti\'on} & Switch de gesti\'on de 4 puertos & 2$\times$ Ethernet 10/100 (agregar un switch chico para 4 puertos) \\ \hline
+\textbf{Gestionado por} & Opengear \textbf{Lighthouse} (requiere la VM de Fase 2) & \textbf{Digi Remote Manager} (mismo tenant que los routers $\rightarrow$ un solo plano) \\
+\end{tabular}}
+
+\vspace{8pt}
+\notebox{\kf{En evaluaci\'on: Connect IT 4 en el Sitio B.} Elegirlo unifica la gesti\'on bajo DRM y elimina la VM de Lighthouse; mantener el OM1304 conserva un OOB con diversidad de proveedor. Se listan los dos a prop\'osito --- por ahora el diagrama queda sin modificar.}
+
+% ---- Leyenda de enlaces ------------------------------------
+\section{Leyenda de enlaces (tal como est\'a dibujado)}
+\begin{itemize}
+  \item \swatch{PrimaryBlue}\ \ WAN primaria Starlink / overlay + eBGP (azul grueso)
+  \item \swatch{AccentBlue}\ \ Respaldo in-band 5G / enlaces entre sitios
+  \item \swatch{DigiGreen}\ \ Service fabric (fibra SFP 1 Gb/s)
+  \item \swatch{Muted}\ \ Gesti\'on / LAN --- HTTPS, API, DRM (punteado)
+  \item \swatch{Fase2Orange}\ \ Out-of-band / elementos de Fase 2 (discontinuo)
+  \item \swatch{RFViolet}\ \ Zigbee / RF celular
+  \item Caja discontinua = Fase 2
+\end{itemize}
+
+\vspace{4pt}
+{\footnotesize\color{Muted} Fuente: \texttt{assets/lab-diagram-tabloid-EN.tex} y \texttt{03-arquitectura.md}. Los logos de producto son propiedad de sus respectivos due\~nos.}
+
+\end{document}

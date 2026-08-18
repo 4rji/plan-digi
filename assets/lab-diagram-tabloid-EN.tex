@@ -1,0 +1,361 @@
+% ============================================================
+% Poster: Starlink-Primary Resilient Gateway Reference Lab (EN)
+% Size: tabloid / doble carta 17in x 11in, landscape
+% Compile: pdflatex lab-diagram-tabloid-EN.tex
+% PNG 300dpi: pdftoppm -png -r 300 lab-diagram-tabloid-EN.pdf
+% Content source: ../03-arquitectura.md
+% Brand logos in logos/ (property of their respective owners)
+% ============================================================
+\documentclass[11pt]{article}
+\usepackage[paperwidth=17in,paperheight=11in,margin=0in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[scaled=.96]{helvet}
+\renewcommand{\familydefault}{\sfdefault}
+\usepackage{xcolor}
+\usepackage{graphicx}
+\usepackage{tikz}
+\usetikzlibrary{calc,arrows.meta,decorations.pathmorphing,positioning}
+\pagestyle{empty}
+
+% ---- Palette (matches the executive pitch) -----------------
+\definecolor{AccentBlue}{HTML}{3A83C2}
+\definecolor{PrimaryBlue}{HTML}{1B5A8F}
+\definecolor{Slate}{HTML}{273140}
+\definecolor{Muted}{HTML}{5A6470}
+\definecolor{DigiGreen}{HTML}{5B9E31}
+\definecolor{Fase2Orange}{HTML}{D97706}
+\definecolor{RFViolet}{HTML}{7A4FA0}
+\definecolor{PageBG}{HTML}{EDF2F8}
+
+% ---- Link styles -------------------------------------------
+\tikzset{
+  wanstar/.style={line width=2.6pt, PrimaryBlue},
+  wan5g/.style={line width=2pt, AccentBlue},
+  fabric/.style={line width=2.6pt, DigiGreen},
+  mgmt/.style={line width=1.1pt, Muted, densely dotted},
+  oob/.style={line width=1.8pt, Fase2Orange, dashed},
+  rf/.style={line width=1.2pt, RFViolet, decorate,
+             decoration={snake, amplitude=.45mm, segment length=2.2mm, post length=1mm}},
+  beam/.style={line width=.9pt, AccentBlue!75, densely dotted},
+  caption/.style={font=\small, text=Slate, align=center},
+  subcap/.style={font=\footnotesize, text=Muted, align=center},
+  linklab/.style={font=\footnotesize\bfseries, text=Slate, fill=white, inner sep=2pt,
+                  rounded corners=2pt, align=center},
+}
+
+% ============ PRODUCT ICONS (pics) ==========================
+\tikzset{
+  % --- Starlink satellite ---
+  pics/satellite/.style={code={
+    \fill[AccentBlue!65, draw=Slate, line width=.5pt] (-0.36,-0.05) rectangle (-0.13,0.05);
+    \fill[AccentBlue!65, draw=Slate, line width=.5pt] (0.13,-0.05) rectangle (0.36,0.05);
+    \fill[Slate] (-0.10,-0.07) rectangle (0.10,0.07);
+    \draw[Slate, line width=.7pt] (-0.13,0) -- (-0.10,0) (0.10,0) -- (0.13,0);
+  }},
+  % --- Starlink Gen 3 flat panel on kickstand ---
+  pics/dish/.style={code={
+    \draw[line width=2pt, Slate, line cap=round] (0.06,-0.06) -- (0.14,-0.52);
+    \draw[line width=2pt, Slate, line cap=round] (-0.16,-0.52) -- (0.44,-0.52);
+    \begin{scope}[rotate=18]
+      \fill[white, draw=Slate, line width=1.4pt, rounded corners=3pt] (-0.62,-0.40) rectangle (0.62,0.40);
+      \fill[AccentBlue!14, rounded corners=2pt] (-0.54,-0.32) rectangle (0.54,0.32);
+      \fill[Slate] (0,0) circle (0.035);
+    \end{scope}
+  }},
+  % --- Cell tower ---
+  pics/celltower/.style={code={
+    \draw[Slate, line width=1.1pt] (-0.24,-0.72) -- (0,0.38) -- (0.24,-0.72);
+    \draw[Slate, line width=.6pt] (-0.16,-0.36) -- (0.16,-0.36) (-0.20,-0.55) -- (0.20,-0.55)
+      (-0.16,-0.36) -- (0.20,-0.55) (0.16,-0.36) -- (-0.20,-0.55)
+      (-0.11,-0.14) -- (0.11,-0.14) (-0.11,-0.14) -- (0.16,-0.36) (0.11,-0.14) -- (-0.16,-0.36);
+    \fill[Slate] (-0.035,0.30) rectangle (0.035,0.52);
+    \draw[AccentBlue, line width=.9pt] (0.10,0.46) arc (-40:40:0.16);
+    \draw[AccentBlue, line width=.9pt] (0.17,0.38) arc (-40:40:0.28);
+    \draw[AccentBlue, line width=.9pt] (-0.10,0.46) arc (220:140:0.16);
+    \draw[AccentBlue, line width=.9pt] (-0.17,0.38) arc (220:140:0.28);
+  }},
+  % --- Digi IX40 router ---
+  pics/router/.style={code={
+    \draw[line width=1.9pt, Slate, line cap=round] (-0.82,0.42) -- (-0.98,0.95);
+    \draw[line width=1.9pt, Slate, line cap=round] (0.82,0.42) -- (0.98,0.95);
+    \fill[Slate] (-0.98,0.95) circle (0.045) (0.98,0.95) circle (0.045);
+    \fill[white, draw=PrimaryBlue, line width=1.6pt, rounded corners=4pt] (-1.05,-0.42) rectangle (1.05,0.42);
+    \node[font=\small\bfseries, text=PrimaryBlue] at (0,0.14) {DIGI IX40-05};
+    \foreach \px in {-0.78,-0.55,-0.32,-0.09}{
+      \draw[Slate, line width=.8pt] (\px,-0.30) rectangle ++(0.16,0.14);}
+    \node[font=\tiny, text=Muted] at (0.42,-0.23) {SFP};
+    \draw[DigiGreen, line width=.9pt] (0.30,-0.31) rectangle ++(0.24,0.15);
+    \fill[DigiGreen] (0.70,-0.16) circle (0.030) (0.80,-0.16) circle (0.030) (0.90,-0.16) circle (0.030);
+    \draw[Slate, line width=.8pt] (0.66,-0.31) rectangle ++(0.28,0.10);
+  }},
+  % --- Cloud (DRM) ---
+  pics/cloudpic/.style={code={
+    \path[fill=white, draw=PrimaryBlue, line width=1.6pt]
+      (-0.78,0) .. controls (-1.08,0.02) and (-1.04,0.44) .. (-0.66,0.44)
+      .. controls (-0.62,0.74) and (-0.16,0.80) .. (0.02,0.58)
+      .. controls (0.24,0.82) and (0.72,0.70) .. (0.72,0.40)
+      .. controls (1.06,0.38) and (1.08,0.02) .. (0.76,0)
+      -- cycle;
+  }},
+  % --- Rack server ---
+  pics/server/.style={code={
+    \fill[white, draw=Slate, line width=1.2pt, rounded corners=2pt] (-0.40,-0.52) rectangle (0.40,0.52);
+    \foreach \sy in {0.18,-0.14,-0.46}{
+      \draw[Slate, line width=.7pt] (-0.40,\sy+0.30) -- (0.40,\sy+0.30);
+      \fill[DigiGreen] (-0.28,\sy+0.15) circle (0.032);
+      \draw[Muted, line width=.7pt] (-0.10,\sy+0.15) -- (0.28,\sy+0.15);}
+  }},
+  % --- ConnectCore SoM (chip) ---
+  pics/som/.style={code={
+    \foreach \pp in {-0.24,-0.08,0.08,0.24}{
+      \draw[Slate, line width=1pt] (\pp,0.34) -- (\pp,0.46) (\pp,-0.34) -- (\pp,-0.46)
+                                   (0.34,\pp) -- (0.46,\pp) (-0.34,\pp) -- (-0.46,\pp);}
+    \fill[white, draw=Slate, line width=1.3pt, rounded corners=1.5pt] (-0.34,-0.34) rectangle (0.34,0.34);
+    \fill[DigiGreen!22, draw=DigiGreen, line width=.9pt] (-0.20,-0.20) rectangle (0.20,0.20);
+    \node[font=\tiny\bfseries, text=PrimaryBlue] at (0,0.02) {MP255};
+  }},
+  % --- XBee module (PCB + antenna) ---
+  pics/xbeemod/.style={code={
+    \fill[AccentBlue!16, draw=PrimaryBlue, line width=1.2pt, rounded corners=2pt] (-0.26,-0.30) rectangle (0.26,0.24);
+    \draw[PrimaryBlue, line width=1.1pt] (0,0.24) -- (0,0.42);
+    \fill[PrimaryBlue] (0,0.44) circle (0.035);
+    \node[font=\scriptsize\bfseries, text=PrimaryBlue] at (0,-0.04) {X};
+  }},
+  % --- XBee Hive gateway ---
+  pics/hive/.style={code={
+    \fill[white, draw=PrimaryBlue, line width=1.3pt, rounded corners=3pt] (-0.42,-0.26) rectangle (0.42,0.26);
+    \draw[PrimaryBlue, line width=1.2pt, line cap=round] (0.30,0.26) -- (0.42,0.58);
+    \fill[PrimaryBlue] (0.42,0.58) circle (0.035);
+    \node[font=\scriptsize\bfseries, text=PrimaryBlue] at (-0.02,0.02) {HIVE};
+    \fill[DigiGreen] (-0.28,-0.14) circle (0.028) (-0.18,-0.14) circle (0.028);
+  }},
+  % --- Physical sensor ---
+  pics/sensorpic/.style={code={
+    \fill[white, draw=RFViolet, line width=1.2pt] (0,0) circle (0.26);
+    \draw[RFViolet, line width=1pt] (0,-0.08) -- (0,0.12);
+    \fill[RFViolet] (0,-0.11) circle (0.055);
+  }},
+  % --- Opengear OM1304 console server ---
+  pics/consoleserver/.style={code={
+    \fill[white, draw=Fase2Orange, line width=1.4pt, rounded corners=2.5pt] (-0.72,-0.20) rectangle (0.72,0.20);
+    \foreach \px in {-0.56,-0.38,-0.20,-0.02}{
+      \draw[Slate, line width=.8pt] (\px,-0.07) rectangle ++(0.13,0.13);}
+    \fill[Fase2Orange] (0.30,0.0) circle (0.030);
+    \node[font=\tiny\bfseries, text=Fase2Orange] at (0.48,0.0) {OM};
+  }},
+  % --- Switch ---
+  pics/switchpic/.style={code={
+    \fill[white, draw=DigiGreen, line width=1.3pt, rounded corners=2.5pt] (-0.52,-0.19) rectangle (0.52,0.19);
+    \draw[-{Stealth[length=4pt]}, DigiGreen, line width=1pt] (-0.36,0.05) -- (0.10,0.05);
+    \draw[-{Stealth[length=4pt]}, DigiGreen, line width=1pt] (0.36,-0.06) -- (-0.10,-0.06);
+  }},
+  % --- PDU / UPS ---
+  pics/pdu/.style={code={
+    \fill[white, draw=Slate, line width=1.2pt, rounded corners=2pt] (-0.20,-0.46) rectangle (0.20,0.46);
+    \fill[Slate!85] (-0.06,0.20) -- (0.07,0.20) -- (0.00,0.02) -- (0.09,0.02) -- (-0.05,-0.22) -- (0.00,-0.04) -- (-0.09,-0.04) -- cycle;
+    \draw[Slate, line width=.8pt] (0,-0.33) circle (0.062);
+    \fill[Slate] (-0.022,-0.33) circle (0.014) (0.022,-0.33) circle (0.014);
+  }},
+  % --- Container (Digi Container) ---
+  pics/containerpic/.style={code={
+    \fill[white, draw=AccentBlue, line width=1.2pt, rounded corners=1.5pt] (-0.34,-0.18) rectangle (0.34,0.18);
+    \foreach \px in {-0.20,-0.07,0.06,0.19}{
+      \draw[AccentBlue, line width=.8pt] (\px,-0.12) -- (\px,0.12);}
+  }},
+}
+
+% Card with white body + colored top ribbon
+\newcommand{\cardribbon}[6]{% x1,y1,x2,y2,color,radius fixed 9pt
+  \fill[white, draw=#5, line width=1.6pt, rounded corners=9pt] (#1,#2) rectangle (#3,#4);
+  \fill[#5, rounded corners=9pt] (#1,{#4-0.34}) rectangle (#3,#4);
+  \fill[#5] (#1,{#4-0.34}) rectangle (#3,{#4-0.17});
+  \draw[#5, line width=1.6pt, rounded corners=9pt] (#1,#2) rectangle (#3,#4);
+  \node[anchor=west, font=\normalsize\bfseries, text=white] at ({#1+0.18},{#4-0.17}) {#6};
+}
+
+\begin{document}
+\noindent\begin{tikzpicture}[x=1in, y=1in]
+  % ================= BACKGROUND =================
+  \fill[PageBG] (0,0) rectangle (17,11);
+
+  % ================= TITLE =================
+  \node[anchor=west, font=\fontsize{30}{34}\selectfont\bfseries, text=Slate] at (0.45,10.52)
+    {Starlink-Primary Resilient Gateway Reference Lab};
+  \node[anchor=west, font=\large, text=Muted] at (0.47,10.05)
+    {Lab architecture --- one site in the sprint (Ring 0) $\rightarrow$ three sites + central control (Rings 1--2) \ \textbullet\ \ Internship capstone --- Digi International \ \textbullet\ \ July 2026};
+  \draw[AccentBlue, line width=2.5pt] (0.45,9.82) -- (16.55,9.82);
+
+  % Brand row (top right)
+  \node at (13.35,10.30) {\includegraphics[width=1.05in]{logos/starlink-trim.png}};
+  \node at (14.85,10.30) {\includegraphics[width=0.95in]{logos/digi-trim.png}};
+  \node at (16.02,10.30) {\includegraphics[width=1.00in]{logos/opengear-trim.png}};
+
+  % ================= STARLINK CONSTELLATION =================
+  \pic at (1.15,9.05) {satellite};
+  \pic at (2.45,9.45) {satellite};
+  \pic at (3.75,9.00) {satellite};
+  \draw[beam] (1.15,8.95) -- (1.62,6.60);
+  \draw[beam] (2.45,9.35) -- (1.72,6.60);
+  \draw[beam] (3.75,8.90) -- (1.82,6.60);
+  \node at (2.45,8.70) {\includegraphics[width=1.2in]{logos/spacex-trim.png}};
+  \node[subcap] at (2.45,8.46) {Starlink constellation};
+
+  % ================= CENTRAL CONTROL =================
+  \cardribbon{5.2}{7.7}{16.55}{9.65}{PrimaryBlue}{CENTRAL CONTROL --- cloud + lab host (Proxmox) \ \textbullet\ \ AS65000}
+
+  % DRM Premier
+  \pic[scale=1.0] at (6.45,8.64) {cloudpic};
+  \node at (6.43,8.88) {\includegraphics[width=0.55in]{logos/digi-trim.png}};
+  \node[caption, font=\small\bfseries] at (6.45,8.26) {Digi Remote Manager Premier};
+  \node[subcap, text width=2.0in] at (6.45,8.00) {config manager \textbullet\ alerts \textbullet\ Push Monitor \textbullet\ Containers \textbullet\ CCCS (OTA)};
+
+  % Core / route collector
+  \pic at (8.62,8.68) {server};
+  \node[caption, font=\small\bfseries] at (8.62,8.04) {Core / route collector};
+  \node[subcap] at (8.62,7.86) {IKEv2/IPsec overlay \textbullet\ eBGP};
+
+  % SIEM
+  \pic at (10.42,8.68) {server};
+  \node[caption, font=\small\bfseries] at (10.42,8.04) {SIEM};
+  \node[subcap] at (10.42,7.86) {webhooks + MP255 agent};
+
+  % Impairment
+  \pic at (12.22,8.68) {server};
+  \node[caption, font=\small\bfseries] at (12.22,8.04) {Impairment platform};
+  \node[subcap] at (12.22,7.86) {loss / jitter / latency};
+
+  % WAN Bonding server
+  \pic at (14.02,8.68) {server};
+  \node[caption, font=\small\bfseries] at (14.02,8.04) {WAN Bonding server};
+  \node[subcap] at (14.02,7.86) {Tier 3 --- 1 Gb/s};
+
+  % Lighthouse (phase 2)
+  \draw[Fase2Orange, dashed, line width=1.2pt, rounded corners=4pt] (15.05,7.80) rectangle (16.42,9.22);
+  \pic[scale=0.85] at (15.72,8.76) {server};
+  \node[caption, font=\small\bfseries, text=Fase2Orange] at (15.72,8.14) {Lighthouse\\Enhance VM};
+  \node[subcap, text=Fase2Orange] at (15.72,7.91) {[PHASE 2]};
+
+  % ================= SITE A =================
+  \cardribbon{0.4}{1.55}{10.6}{7.0}{AccentBlue}{SITE A --- AS65001 \ \textbullet\ \ NATIVE profile (SureLink failover) \ \textbullet\ \ Ring 0 --- 2-week sprint}
+
+  % ---- LINKS FIRST (they stay under icons and labels) ----
+  \draw[wanstar, -{Stealth[length=8pt]}] (2.42,5.72) -- (3.83,5.45);
+  \draw[rf] (1.86,3.40) -- (3.25,4.45);
+  \draw[wan5g, -{Stealth[length=7pt]}] (3.25,4.45) -- (3.86,4.95);
+  \draw[fabric] (4.90,4.86) -- (4.90,3.62);
+  \draw[mgmt] (5.97,5.18) -- (7.08,5.55);
+  \draw[mgmt] (5.97,5.60) -- (6.35,6.14);
+  \draw[oob] (5.97,4.95) -- (6.35,4.95) -- (6.35,2.30) -- (8.14,2.30);
+  \draw[rf] (8.00,5.66) -- (9.34,5.66);
+  \draw[rf] (9.62,5.32) -- (9.62,4.62);
+
+  % ---- ICONS AND LABELS ----
+  % Starlink kit
+  \pic[scale=1.1] at (1.72,5.95) {dish};
+  \node at (1.72,4.96) {\includegraphics[width=1.0in]{logos/starlink-trim.png}};
+  \node[subcap] at (1.72,4.48) {Performance Kit (Gen 3)\\CGNAT 100.64.0.0/10};
+  \node[linklab] at (3.10,5.85) {WAN/ETH1 (copper)};
+
+  % Carrier A tower
+  \pic at (1.30,3.10) {celltower};
+  \node[caption, font=\small\bfseries] at (1.30,2.28) {Carrier A --- 5G};
+  \node[subcap] at (1.30,2.10) {own SIM / APN};
+  \node[linklab, text=AccentBlue] at (2.75,4.10) {5G modem\\in-band backup};
+
+  % IX40 router + Digi logo
+  \node at (4.90,6.44) {\includegraphics[width=0.8in]{logos/digi-trim.png}};
+  \pic at (4.90,5.30) {router};
+
+  % Digi Container
+  \pic at (6.55,6.35) {containerpic};
+  \node[subcap, anchor=west, align=left] at (6.95,6.42) {\textbf{\textcolor{Slate}{Digi Container}} --- metrics\\collector (resource limits)};
+
+  % fiber / LAN labels
+  \node[linklab, anchor=west, text=DigiGreen!60!black] at (5.02,4.58) {SFP/ETH5 --- 1 Gb/s\\(SFP, \textbf{NO} SFP+)};
+  \node[linklab, text=Muted] at (6.55,5.05) {site LAN};
+
+  % Service fabric
+  \pic at (4.90,3.40) {switchpic};
+  \node[caption, font=\small\bfseries] at (4.90,3.04) {Service fabric};
+  \node[subcap] at (4.90,2.84) {IPv4 /24 \textbullet\ IPv6 /64 $\rightarrow$ advertised via eBGP};
+
+  % XBee Hive + XBee 3 + sensor
+  \pic at (7.55,5.62) {hive};
+  \node[caption, font=\small\bfseries] at (7.55,5.22) {Digi XBee Hive};
+  \pic at (9.62,5.68) {xbeemod};
+  \node[caption, font=\small\bfseries, anchor=east, align=right] at (9.32,5.28) {Digi XBee 3\\Zigbee};
+  \pic at (9.62,4.32) {sensorpic};
+  \node[subcap, text width=1.4in] at (9.62,3.88) {sensor: temperature\\door / digital input};
+
+  % ConnectCore MP255
+  \pic at (7.55,3.98) {som};
+  \node[caption, font=\small\bfseries] at (7.55,3.38) {Digi ConnectCore MP255};
+  \node[subcap, text width=2.15in] at (7.55,3.06) {DEY (Yocto) image \textbullet\ mgmt LAN \textbullet\ agent $\rightarrow$ SIEM (offline buffer + replay) \textbullet\ OTA via CCCS};
+
+  % serial DB9 label
+  \node[linklab, text=Fase2Orange, anchor=west, align=left] at (6.48,2.55) {DB9 serial (Login mode)\\adapter 319015};
+
+  % Phase 2: Opengear OOB
+  \draw[Fase2Orange, dashed, line width=1.3pt, rounded corners=6pt] (8.10,1.65) rectangle (10.45,2.85);
+  \node at (8.98,2.62) {\includegraphics[width=0.9in]{logos/opengear-trim.png}};
+  \pic[scale=0.45] at (10.02,2.52) {celltower};
+  \pic[scale=0.85] at (9.10,2.22) {consoleserver};
+  \node[subcap, text=Fase2Orange, align=center] at (9.28,1.86)
+    {\textbf{OM1304-4E-C-LSP} --- OOB [PHASE 2]\\5G Carrier B \textbullet\ mgmt switch \textbullet\ own power};
+
+  % Power
+  \pic at (2.85,1.95) {pdu};
+  \node[subcap, anchor=west, align=left] at (3.12,1.99) {\textbf{\textcolor{Slate}{primary PDU/UPS}}\\Starlink + IX40 + load};
+  \pic at (4.95,1.95) {pdu};
+  \node[subcap, anchor=west, align=left] at (5.22,1.99) {\textbf{\textcolor{Slate}{secondary PDU/UPS}}\\OOB + modem B};
+
+  % ================= SITE A <-> CONTROL LINKS =================
+  \draw[wanstar, {Stealth[length=8pt]}-{Stealth[length=8pt]}] (5.75,7.0) -- (5.75,7.30) -- (8.62,7.30) -- (8.62,7.7);
+  \node[linklab, text=PrimaryBlue] at (7.2,7.44) {IKEv2/IPsec overlay (NAT-T for CGNAT) + eBGP};
+  \draw[mgmt, -{Stealth[length=6pt]}] (4.40,7.0) -- (4.40,7.52) -- (6.35,7.52) -- (6.35,7.7);
+  \node[linklab, text=Muted] at (4.42,7.62) {management HTTPS/API};
+
+  % ================= SITES B AND C (expansion) =================
+  \cardribbon{11.2}{4.85}{13.75}{6.85}{AccentBlue}{SITE B --- AS65002}
+  \node[anchor=north, font=\footnotesize\bfseries, text=AccentBlue] at (12.475,6.42) {BONDING profile};
+  \pic[scale=0.52, transform shape] at (11.80,5.72) {dish};
+  \pic[scale=0.55, transform shape] at (12.85,5.68) {router};
+  \node[subcap, text width=2.3in] at (12.475,5.18) {identical hardware to Site A\\Starlink + 5G inside the bonded\\tunnel \textbullet\ Ring 1};
+
+  \cardribbon{14.0}{4.85}{16.55}{6.85}{AccentBlue}{SITE C --- AS65003}
+  \node[anchor=north, font=\footnotesize\bfseries, text=AccentBlue] at (15.275,6.42) {CANDIDATE / CHAOS profile};
+  \pic[scale=0.52, transform shape] at (14.60,5.72) {dish};
+  \pic[scale=0.55, transform shape] at (15.65,5.68) {router};
+  \node[subcap, text width=2.3in] at (15.275,5.18) {identical to A \textbullet\ candidate containers,\\config and firmware \textbullet\ Rings 1--2\\A/B/C profile rotation};
+
+  % links B and C to control
+  \draw[wan5g, {Stealth[length=6pt]}-{Stealth[length=6pt]}] (12.475,6.85) -- (12.475,7.7);
+  \draw[wan5g, {Stealth[length=6pt]}-{Stealth[length=6pt]}] (15.275,6.85) -- (15.275,7.7);
+  % OOB phase 2 toward Lighthouse
+  \draw[oob, -{Stealth[length=7pt]}] (10.45,2.17) -- (10.90,2.17) -- (10.90,7.45) -- (15.72,7.45) -- (15.72,7.7);
+  \node[linklab, text=Fase2Orange, rotate=90] at (10.90,3.75) {OOB $\rightarrow$ Lighthouse [Phase 2]};
+
+  % ================= LEGEND =================
+  \fill[white, draw=Muted!60, line width=1.2pt, rounded corners=8pt] (11.2,2.30) rectangle (16.55,4.45);
+  \node[anchor=north west, font=\small\bfseries, text=Slate] at (11.38,4.33) {LEGEND};
+  \draw[wanstar]  (11.45,3.90) -- (12.05,3.90); \node[anchor=west, font=\footnotesize, text=Slate] at (12.12,3.90) {Starlink primary WAN / overlay + eBGP};
+  \draw[wan5g]    (11.45,3.55) -- (12.05,3.55); \node[anchor=west, font=\footnotesize, text=Slate] at (12.12,3.55) {5G in-band backup / site links};
+  \draw[fabric]   (11.45,3.20) -- (12.05,3.20); \node[anchor=west, font=\footnotesize, text=Slate] at (12.12,3.20) {service fabric (1 Gb/s SFP fiber)};
+  \draw[mgmt]     (11.45,2.85) -- (12.05,2.85); \node[anchor=west, font=\footnotesize, text=Slate] at (12.12,2.85) {management / LAN (HTTPS \textbullet\ API \textbullet\ DRM)};
+  \draw[oob]      (11.45,2.50) -- (12.05,2.50); \node[anchor=west, font=\footnotesize, text=Slate] at (12.12,2.50) {out-of-band / PHASE 2 elements};
+  \draw[rf]       (14.80,3.90) -- (15.40,3.90); \node[anchor=west, font=\footnotesize, text=Slate] at (15.47,3.90) {Zigbee / cellular RF};
+  \draw[Fase2Orange, dashed, line width=1.1pt, rounded corners=2pt] (14.80,3.44) rectangle (15.40,3.66);
+  \node[anchor=west, font=\footnotesize, text=Slate] at (15.47,3.55) {dashed box = PHASE 2};
+
+  % ================= RINGS STRIP =================
+  \fill[white, draw=PrimaryBlue!40, line width=1.2pt, rounded corners=8pt] (0.4,0.35) rectangle (16.55,1.15);
+  \node[anchor=west, font=\small, text=Slate] at (0.62,0.75)
+    {\textbf{\textcolor{PrimaryBlue}{RING 0 (2-week sprint):}} Site A end-to-end + embedded sensor + SureLink vs WAN Bonding A/B
+     \ \ \textbullet\ \ \textbf{\textcolor{PrimaryBlue}{RING 1:}} Sites B/C + Opengear/Lighthouse OOB
+     \ \ \textbullet\ \ \textbf{\textcolor{PrimaryBlue}{RING 2:}} A/B/C rotation, 30 reps, TrustFence, robust OTA};
+  \node[anchor=east, font=\footnotesize, text=Muted] at (16.55,0.20)
+    {source: 03-arquitectura.md \ \textbullet\ \ product logos are property of their respective owners};
+
+\end{tikzpicture}
+\end{document}
